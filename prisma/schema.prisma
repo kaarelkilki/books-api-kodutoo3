@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["books_api"]
+  url      = env("DATABASE_URL")
+}
+
+// Book mudel
+model Book {
+  id Int @id @default(autoincrement())
+  title String @db.VarChar(255)
+  publishedYear Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-many seos autoritega
+  authors AuthorBook[]
+
+  @@map("books")
+  @@schema("books_api")
+}
+
+// Author mudel
+model Author {
+  id Int @id @default(autoincrement())
+  firstName String @db.VarChar(100)
+  lastName String @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-many seos raamatutega
+  books AuthorBook[]
+
+  @@schema("books_api")
+}
+
+// AuthorBook - side tabel
+model AuthorBook {
+  id Int @id @default(autoincrement())
+  authorId Int @map("author_id")
+  bookId Int @map("book_id")
+
+  // Relatsioonid
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  // Unikaalne kombinatsioon
+  @@unique([authorId, bookId])
+  @@map("author_books")
+  @@schema("books_api")
+}
