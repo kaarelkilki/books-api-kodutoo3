@@ -1,5 +1,10 @@
 import express, { Request, Response, Application } from "express";
 import bookRoutes from "./routes/book.routes";
+import authorRoutes from "./routes/author.routes";
+import publisherRoutes from "./routes/publisher.routes";
+import reviewRoutes from "./routes/review.routes";
+import genreRoutes from "./routes/genre.routes";
+
 // Loo Express rakendus
 const app: Application = express();
 // Port number
@@ -8,6 +13,10 @@ const PORT: number = 3000;
 app.use(express.json());
 // Impordi raamatute marsruudid
 app.use("/api/v1/", bookRoutes);
+app.use("/api/v1/", authorRoutes);
+app.use("/api/v1/", publisherRoutes);
+app.use("/api/v1/", reviewRoutes);
+app.use("/api/v1/", genreRoutes);
 
 // Käivita server
 app.listen(PORT, () => {
