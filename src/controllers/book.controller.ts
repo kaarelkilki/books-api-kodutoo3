@@ -1,6 +1,6 @@
-import * as bookService from "../services/book.service";
+import * as bookService from "../services/book.service.db";
 import { Request, Response } from "express";
-/*Kui service muutub async-iks, controllerid peavad minema async/await peale + try/catch veahaldus (nt Prisma “record not found”).*/
+
 export async function getBooks(req: Request, res: Response): Promise<void> {
   try {
     const books = await bookService.getBooks();
