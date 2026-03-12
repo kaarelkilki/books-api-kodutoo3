@@ -1,11 +1,125 @@
-import { Book } from "../models/book.model";
-import { books } from "../data/mock/books.mock";
 import { PrismaClient } from "@prisma/client";
+import {
+  Book,
+  BookListQuery,
+  PaginatedBooksResponse,
+} from "../models/book.model";
 
 const prisma = new PrismaClient();
 
-export async function getBooks(): Promise<Book[]> {
-  return prisma.book.findMany();
+function buildPagination(page: number, limit: number, totalItems: number) {
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit);
+
+  return {
+    page,
+    limit,
+    totalItems,
+    totalPages,
+    hasPreviousPage: page > 1,
+    hasNextPage: page < totalPages,
+  };
+}
+
+function mapBookWithAuthors(book: {
+  id: number;
+  title: string;
+  publishedYear: number;
+  authors: Array<{
+    author: {
+      firstName: string;
+      lastName: string;
+    };
+  }>;
+}): Book {
+  const authorNames = book.authors.map(({ author }) => {
+    return `${author.firstName} ${author.lastName}`.trim();
+  });
+
+  return {
+    id: book.id,
+    title: book.title,
+    publishedYear: book.publishedYear,
+    author: authorNames.length > 0 ? authorNames.join(", ") : "Unknown",
+    language: "",
+    genre: "",
+  };
+}
+
+export async function getBooks(
+  query: BookListQuery = {},
+): Promise<PaginatedBooksResponse> {
+  const {
+    title,
+    year,
+    author,
+    sortBy,
+    order = "asc",
+    page = 1,
+    limit = 10,
+  } = query;
+
+  const where = {
+    ...(title
+      ? {
+          title: {
+            contains: title,
+            mode: "insensitive" as const,
+          },
+        }
+      : {}),
+    ...(year !== undefined ? { publishedYear: year } : {}),
+    ...(author
+      ? {
+          authors: {
+            some: {
+              author: {
+                OR: [
+                  {
+                    firstName: {
+                      contains: author,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: author,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }
+      : {}),
+  };
+
+  const [totalItems, books] = await prisma.$transaction([
+    prisma.book.count({ where }),
+    prisma.book.findMany({
+      where,
+      orderBy: sortBy ? { [sortBy]: order } : undefined,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        authors: {
+          include: {
+            author: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    data: books.map(mapBookWithAuthors),
+    pagination: buildPagination(page, limit, totalItems),
+  };
 }
 
 export async function getBookById(id: number): Promise<Book | null> {

@@ -42,6 +42,50 @@ export async function addReview(
   return reviewToAdd;
 }
 
+export async function getReviewsByBookId(bookId: number): Promise<Review[]> {
+  return reviews.filter((item) => item.bookId === bookId);
+}
+
+export async function addReviewForBook(
+  bookId: number,
+  payload: Omit<Review, "id" | "bookId">,
+): Promise<Review> {
+  const reviewToAdd: Omit<Review, "id"> = {
+    bookId,
+    reviewerName: payload.reviewerName,
+    rating: payload.rating,
+    comment: payload.comment,
+  };
+
+  return addReview(reviewToAdd);
+}
+
+export async function deleteReviewForBook(
+  bookId: number,
+  reviewId: number,
+): Promise<boolean> {
+  const review = reviews.find(
+    (item) => item.id === reviewId && item.bookId === bookId,
+  );
+  if (!review) {
+    return false;
+  }
+
+  return deleteReview(reviewId);
+}
+
+export async function getAverageRatingForBook(
+  bookId: number,
+): Promise<number | null> {
+  const bookReviews = reviews.filter((item) => item.bookId === bookId);
+  if (bookReviews.length === 0) {
+    return null;
+  }
+
+  const total = bookReviews.reduce((sum, item) => sum + item.rating, 0);
+  return total / bookReviews.length;
+}
+
 export async function updateReview(
   id: number,
   updatedReview: Partial<Review>,
