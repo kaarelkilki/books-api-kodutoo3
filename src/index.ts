@@ -4,6 +4,7 @@ import authorRoutes from "./routes/author.routes";
 import publisherRoutes from "./routes/publisher.routes";
 import reviewRoutes from "./routes/review.routes";
 import genreRoutes from "./routes/genre.routes";
+import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 // Loo Express rakendus
 const app: Application = express();
@@ -17,6 +18,9 @@ app.use("/api/v1/", authorRoutes);
 app.use("/api/v1/", publisherRoutes);
 app.use("/api/v1/", reviewRoutes);
 app.use("/api/v1/", genreRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Käivita server
 app.listen(PORT, () => {
