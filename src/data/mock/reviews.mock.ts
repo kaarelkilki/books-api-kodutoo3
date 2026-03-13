@@ -1,0 +1,88 @@
+import { Review } from "../../models/review.model";
+
+export const reviews: Review[] = [
+  {
+    id: 1,
+    bookId: 1,
+    reviewerName: "Alice",
+    rating: 5,
+    comment: "Very practical and clear.",
+  },
+  {
+    id: 2,
+    bookId: 2,
+    reviewerName: "Bob",
+    rating: 4,
+    comment: "Great read for software engineers.",
+  },
+  {
+    id: 3,
+    bookId: 3,
+    reviewerName: "Charlie",
+    rating: 5,
+    comment: "A timeless classic.",
+  },
+  {
+    id: 4,
+    bookId: 4,
+    reviewerName: "Diana",
+    rating: 5,
+    comment: "Concrete advice for improving legacy codebases.",
+  },
+  {
+    id: 5,
+    bookId: 5,
+    reviewerName: "Ethan",
+    rating: 4,
+    comment: "Dense, but worth the effort.",
+  },
+  {
+    id: 6,
+    bookId: 6,
+    reviewerName: "Fatima",
+    rating: 4,
+    comment: "Still relevant for team communication problems.",
+  },
+  {
+    id: 7,
+    bookId: 7,
+    reviewerName: "George",
+    rating: 5,
+    comment: "Excellent reference for algorithms fundamentals.",
+  },
+  {
+    id: 8,
+    bookId: 8,
+    reviewerName: "Hanna",
+    rating: 4,
+    comment: "A challenging but rewarding programming book.",
+  },
+  {
+    id: 9,
+    bookId: 9,
+    reviewerName: "Ivan",
+    rating: 5,
+    comment: "Ambitious and foundational.",
+  },
+  {
+    id: 10,
+    bookId: 10,
+    reviewerName: "Julia",
+    rating: 5,
+    comment: "Helps structure refactoring work safely.",
+  },
+  {
+    id: 11,
+    bookId: 11,
+    reviewerName: "Karl",
+    rating: 4,
+    comment: "Strong concepts for modeling complex systems.",
+  },
+  {
+    id: 12,
+    bookId: 12,
+    reviewerName: "Laura",
+    rating: 4,
+    comment: "Accessible and memorable explanations.",
+  },
+];

@@ -1,10 +1,5 @@
+import { publishers } from "../data/mock/publishers.mock";
 import { Publisher } from "../models/publisher.model";
-
-let publishers: Publisher[] = [
-  { id: 1, name: "Addison-Wesley", country: "USA", foundedYear: 1942 },
-  { id: 2, name: "O'Reilly Media", country: "USA", foundedYear: 1978 },
-  { id: 3, name: "Manning", country: "USA", foundedYear: 1990 },
-];
 
 export async function getPublishers(): Promise<Publisher[]> {
   return publishers;
@@ -40,7 +35,11 @@ export async function updatePublisher(
 }
 
 export async function deletePublisher(id: number): Promise<boolean> {
-  const before = publishers.length;
-  publishers = publishers.filter((item) => item.id !== id);
-  return publishers.length < before;
+  const index = publishers.findIndex((item) => item.id === id);
+  if (index === -1) {
+    return false;
+  }
+
+  publishers.splice(index, 1);
+  return true;
 }

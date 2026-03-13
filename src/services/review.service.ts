@@ -1,28 +1,5 @@
+import { reviews } from "../data/mock/reviews.mock";
 import { Review } from "../models/review.model";
-
-let reviews: Review[] = [
-  {
-    id: 1,
-    bookId: 1,
-    reviewerName: "Alice",
-    rating: 5,
-    comment: "Very practical and clear.",
-  },
-  {
-    id: 2,
-    bookId: 2,
-    reviewerName: "Bob",
-    rating: 4,
-    comment: "Great read for software engineers.",
-  },
-  {
-    id: 3,
-    bookId: 3,
-    reviewerName: "Charlie",
-    rating: 5,
-    comment: "A timeless classic.",
-  },
-];
 
 export async function getReviews(): Promise<Review[]> {
   return reviews;
@@ -108,7 +85,11 @@ export async function updateReview(
 }
 
 export async function deleteReview(id: number): Promise<boolean> {
-  const before = reviews.length;
-  reviews = reviews.filter((item) => item.id !== id);
-  return reviews.length < before;
+  const index = reviews.findIndex((item) => item.id === id);
+  if (index === -1) {
+    return false;
+  }
+
+  reviews.splice(index, 1);
+  return true;
 }
