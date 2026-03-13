@@ -42,8 +42,15 @@ export async function addReview(
   return reviewToAdd;
 }
 
-export async function getReviewsByBookId(bookId: number): Promise<Review[]> {
-  return reviews.filter((item) => item.bookId === bookId);
+export async function getReviewsByBookId(
+  bookId: number,
+  query: { page?: number; limit?: number } = {},
+): Promise<Review[]> {
+  const bookReviews = reviews.filter((item) => item.bookId === bookId);
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 20;
+  const start = (page - 1) * limit;
+  return bookReviews.slice(start, start + limit);
 }
 
 export async function addReviewForBook(

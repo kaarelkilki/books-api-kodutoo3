@@ -3,6 +3,10 @@ import * as reviewService from "../services/review.service";
 import { Request, Response } from "express";
 import { BookListQuery } from "../models/book.model";
 import { getBooksQuerySchema } from "../validators/book.validators";
+import {
+  createReviewSchema,
+  reviewQuerySchema,
+} from "../validators/review.validator";
 
 function parseOptionalNumber(value: unknown): number | undefined {
   if (typeof value !== "string" || value.trim() === "") {
@@ -110,8 +114,24 @@ export async function getBookReviews(
   res: Response,
 ): Promise<void> {
   const bookId = parseInt(req.params.id as string, 10);
+  const parsedQuery = reviewQuerySchema.safeParse({
+    page: req.query.page !== undefined ? Number(req.query.page) : undefined,
+    limit: req.query.limit !== undefined ? Number(req.query.limit) : undefined,
+  });
+  if (!parsedQuery.success) {
+    res
+      .status(400)
+      .json({
+        error: "Invalid query parameters",
+        details: parsedQuery.error.issues,
+      });
+    return;
+  }
   try {
-    const reviews = await reviewService.getReviewsByBookId(bookId);
+    const reviews = await reviewService.getReviewsByBookId(
+      bookId,
+      parsedQuery.data,
+    );
     res.json(reviews);
   } catch (error) {
     res.status(500).json({ message: "Error fetching book reviews" });
@@ -123,8 +143,15 @@ export async function addBookReview(
   res: Response,
 ): Promise<void> {
   const bookId = parseInt(req.params.id as string, 10);
+  const parsed = createReviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({ error: "Validation failed", details: parsed.error.issues });
+    return;
+  }
   try {
-    const review = await reviewService.addReviewForBook(bookId, req.body);
+    const review = await reviewService.addReviewForBook(bookId, parsed.data);
     res.status(201).json(review);
   } catch (error) {
     res.status(500).json({ message: "Error adding review for book" });

@@ -3,5 +3,5 @@ export interface Review {
   bookId: number;
   reviewerName: string;
   rating: number;
-  comment: string;
+  comment?: string;
 }

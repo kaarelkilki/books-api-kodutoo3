@@ -1,5 +1,9 @@
 import * as reviewService from "../services/review.service";
 import { Request, Response } from "express";
+import {
+  createReviewSchema,
+  updateReviewSchema,
+} from "../validators/review.validator";
 
 export async function getReviews(req: Request, res: Response): Promise<void> {
   try {
@@ -28,7 +32,17 @@ export async function getReviewById(
 }
 
 export async function addReview(req: Request, res: Response): Promise<void> {
-  const newReview = req.body;
+  const parsed = createReviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({ error: "Validation failed", details: parsed.error.issues });
+    return;
+  }
+  const newReview = {
+    ...parsed.data,
+    bookId: parseInt(req.body.bookId as string, 10),
+  };
   try {
     const addedReview = await reviewService.addReview(newReview);
     res.status(201).json(addedReview);
@@ -39,9 +53,15 @@ export async function addReview(req: Request, res: Response): Promise<void> {
 
 export async function updateReview(req: Request, res: Response): Promise<void> {
   const id = parseInt(req.params.id as string, 10);
-  const updatedReview = req.body;
+  const parsed = updateReviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({ error: "Validation failed", details: parsed.error.issues });
+    return;
+  }
   try {
-    const review = await reviewService.updateReview(id, updatedReview);
+    const review = await reviewService.updateReview(id, parsed.data);
     if (review) {
       res.json(review);
     } else {
