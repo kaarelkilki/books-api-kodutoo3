@@ -83,7 +83,7 @@ export function getBookById(id: number): Book | null {
   return book || null;
 }
 
-export function addBook(newBook: Book): Book {
+export function addBook(newBook: Omit<Book, "id">): Book {
   const createdBook = { ...newBook, id: books.length + 1 };
   books.push(createdBook);
   return createdBook;

@@ -3,6 +3,8 @@ import { z } from "zod";
 export const createBookSchema = z.object({
   title: z.string().min(1, "Title is required"),
   author: z.string().min(1, "Author is required"),
+  language: z.string().min(1, "Language is required"),
+  genre: z.string().min(1, "Genre is required"),
   publishedYear: z
     .number()
     .int()
@@ -12,6 +14,8 @@ export const createBookSchema = z.object({
 export const updateBookSchema = z.object({
   title: z.string().min(1, "Title is required").optional(),
   author: z.string().min(1, "Author is required").optional(),
+  language: z.string().min(1, "Language is required").optional(),
+  genre: z.string().min(1, "Genre is required").optional(),
   publishedYear: z
     .number()
     .int()

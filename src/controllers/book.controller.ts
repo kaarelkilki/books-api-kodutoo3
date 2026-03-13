@@ -2,7 +2,11 @@ import * as bookService from "../services/book.service";
 import * as reviewService from "../services/review.service";
 import { Request, Response } from "express";
 import { BookListQuery } from "../models/book.model";
-import { getBooksQuerySchema } from "../validators/book.validators";
+import {
+  createBookSchema,
+  getBooksQuerySchema,
+  updateBookSchema,
+} from "../validators/book.validators";
 import {
   createReviewSchema,
   reviewQuerySchema,
@@ -43,7 +47,7 @@ export async function getBooks(req: Request, res: Response): Promise<void> {
 
     if (!parsedQuery.success) {
       res.status(400).json({
-        message: "Invalid query parameters",
+        error: "Invalid query parameters",
         details: parsedQuery.error.issues,
       });
       return;
@@ -52,7 +56,7 @@ export async function getBooks(req: Request, res: Response): Promise<void> {
     const books = await bookService.getBooks(parsedQuery.data);
     res.json(books);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching books" });
+    res.status(500).json({ error: "Error fetching books", details: [] });
   }
 }
 
@@ -63,35 +67,51 @@ export async function getBookById(req: Request, res: Response): Promise<void> {
     if (book) {
       res.json(book);
     } else {
-      res.status(404).json({ message: "Book not found" });
+      res.status(404).json({ error: "Book not found", details: [] });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error fetching book" });
+    res.status(500).json({ error: "Error fetching book", details: [] });
   }
 }
 
 export async function addBook(req: Request, res: Response): Promise<void> {
-  const newBook = req.body;
+  const parsedBook = createBookSchema.safeParse(req.body);
+  if (!parsedBook.success) {
+    res.status(400).json({
+      error: "Validation failed",
+      details: parsedBook.error.issues,
+    });
+    return;
+  }
+
   try {
-    const addedBook = await bookService.addBook(newBook);
+    const addedBook = await bookService.addBook(parsedBook.data);
     res.status(201).json(addedBook);
   } catch (error) {
-    res.status(500).json({ message: "Error adding book" });
+    res.status(500).json({ error: "Error adding book", details: [] });
   }
 }
 
 export async function updateBook(req: Request, res: Response): Promise<void> {
   const id = parseInt(req.params.id as string, 10);
-  const updatedBookData = req.body;
+  const parsedBook = updateBookSchema.safeParse(req.body);
+  if (!parsedBook.success) {
+    res.status(400).json({
+      error: "Validation failed",
+      details: parsedBook.error.issues,
+    });
+    return;
+  }
+
   try {
-    const updatedBook = await bookService.updateBook(id, updatedBookData);
+    const updatedBook = await bookService.updateBook(id, parsedBook.data);
     if (updatedBook) {
       res.json(updatedBook);
     } else {
-      res.status(404).json({ message: "Book not found" });
+      res.status(404).json({ error: "Book not found", details: [] });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error updating book" });
+    res.status(500).json({ error: "Error updating book", details: [] });
   }
 }
 
@@ -102,10 +122,10 @@ export async function deleteBook(req: Request, res: Response): Promise<void> {
     if (deleted) {
       res.status(204).send();
     } else {
-      res.status(404).json({ message: "Book not found" });
+      res.status(404).json({ error: "Book not found", details: [] });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error deleting book" });
+    res.status(500).json({ error: "Error deleting book", details: [] });
   }
 }
 
@@ -119,12 +139,10 @@ export async function getBookReviews(
     limit: req.query.limit !== undefined ? Number(req.query.limit) : undefined,
   });
   if (!parsedQuery.success) {
-    res
-      .status(400)
-      .json({
-        error: "Invalid query parameters",
-        details: parsedQuery.error.issues,
-      });
+    res.status(400).json({
+      error: "Invalid query parameters",
+      details: parsedQuery.error.issues,
+    });
     return;
   }
   try {
@@ -134,7 +152,7 @@ export async function getBookReviews(
     );
     res.json(reviews);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching book reviews" });
+    res.status(500).json({ error: "Error fetching book reviews", details: [] });
   }
 }
 
@@ -154,7 +172,9 @@ export async function addBookReview(
     const review = await reviewService.addReviewForBook(bookId, parsed.data);
     res.status(201).json(review);
   } catch (error) {
-    res.status(500).json({ message: "Error adding review for book" });
+    res
+      .status(500)
+      .json({ error: "Error adding review for book", details: [] });
   }
 }
 
@@ -169,10 +189,10 @@ export async function deleteBookReview(
     if (deleted) {
       res.status(204).send();
     } else {
-      res.status(404).json({ message: "Review not found" });
+      res.status(404).json({ error: "Review not found", details: [] });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error deleting review" });
+    res.status(500).json({ error: "Error deleting review", details: [] });
   }
 }
 
@@ -185,6 +205,8 @@ export async function getBookAverageRating(
     const averageRating = await reviewService.getAverageRatingForBook(bookId);
     res.json({ bookId, averageRating });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching average rating" });
+    res
+      .status(500)
+      .json({ error: "Error fetching average rating", details: [] });
   }
 }

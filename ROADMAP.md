@@ -5,7 +5,7 @@ Eesmärk: viia projekt vastavusse ülesande kohustusliku miinimumiga (OSA 1 + OS
 ## 0. Kiirparandused enne funktsionaalsust
 
 ### 0.1 Paranda repo baasseadistus
-- [ ] Muuda faili: `.gitignore`
+- [x] Muuda faili: `.gitignore`
   - Eemalda vigane PowerShelli teksti-jääk.
   - Jäta sisse vähemalt:
     - `node_modules`
@@ -13,83 +13,83 @@ Eesmärk: viia projekt vastavusse ülesande kohustusliku miinimumiga (OSA 1 + OS
     - `.env`
     - `.prisma`
     - `src/generated/prisma`
-- [ ] Loo fail: `.env.example`
+- [x] Loo fail: `.env.example`
   - Lisa näidis `DATABASE_URL`.
   - Vajadusel lisa `USE_MOCK=true` / `USE_MOCK=false`.
 
 ### 0.2 Lisa puuduolevad sõltuvused
-- [ ] Muuda faili: `package.json`
+- [x] Muuda faili: `package.json`
   - Lisa `zod`.
   - (Soovi korral) lisa skriptid: `prisma:migrate`, `prisma:generate`, `seed` täpsustatud kujul.
 
 Kontroll:
-- [ ] `npm install` töötab veata.
+- [x] `npm install` töötab veata.
 
 ---
 
 ## 1. OSA 1 - Mock API nõuete täitmine
 
 ## 1.1 Ühtne arhitektuur (validators + middleware)
-- [ ] Loo kaust: `src/validators/`
-- [ ] Loo fail: `src/validators/book.validator.ts`
+- [x] Loo kaust: `src/validators/`
+- [x] Loo fail: `src/validators/book.validator.ts`
   - Book create/update Zod skeemid.
   - Query skeem (`title`, `year`, `language`, `author`, `genre`, `sortBy`, `order`, `page`, `limit`).
-- [ ] Loo fail: `src/validators/review.validator.ts`
+- [x] Loo fail: `src/validators/review.validator.ts`
   - Review create/update skeem (`rating` 1..5 jne).
-- [ ] Loo kaust: `src/middleware/`
-- [ ] Loo fail: `src/middleware/error.middleware.ts`
+- [x] Loo kaust: `src/middleware/`
+- [x] Loo fail: `src/middleware/error.middleware.ts`
   - Globaalne veakäsitleja (400/404/409/500).
   - Error response formaadis:
     - `error`
     - `details` (field + message)
-- [ ] (Soovi korral) Loo fail: `src/middleware/validate.middleware.ts`
+- [x] (Soovi korral) Loo fail: `src/middleware/validate.middleware.ts`
   - Üldine request validation helper Zodile.
 
 ### 1.2 Books CRUD + query (mock režiimis)
-- [ ] Muuda faili: `src/routes/book.routes.ts`
+- [x] Muuda faili: `src/routes/book.routes.ts`
   - Hoia CRUD endpointid.
   - Lisa:
     - `GET /books/:id/reviews`
     - `POST /books/:id/reviews`
     - `GET /books/:id/average-rating`
-- [ ] Muuda faili: `src/controllers/book.controller.ts`
+- [x] Muuda faili: `src/controllers/book.controller.ts`
   - Rakenda query parameetrite lugemine.
   - Tagasta list endpointis ühtne pagination response.
-- [ ] Muuda faili: `src/services/book.service.mock.ts`
+- [x] Muuda faili: `src/services/book.service.mock.ts`
   - Lisa vähemalt 3 filtrit (nt title, year, language).
   - Lisa sorteerimine (`title` või `publishedYear`, `order`).
   - Lisa pagination (`page`, `limit`) + meta arvutused.
 
 ### 1.3 Reviews seotud Bookiga (mock)
-- [ ] Muuda faili: `src/services/review.service.ts`
+- [x] Muuda faili: `src/services/review.service.ts`
   - Lisa funktsioonid:
     - `getReviewsByBookId(bookId, query)`
     - `addReviewForBook(bookId, payload)`
     - `getAverageRatingForBook(bookId)`
-- [ ] Muuda faili: `src/controllers/review.controller.ts`
+- [x] Muuda faili: `src/controllers/review.controller.ts`
   - Vajadusel jaga üldised review endpointid ja book-based endpointid.
 
 ### 1.4 Mock andmete minimaalne maht
-- [ ] Muuda/Loo failid:
+- [x] Muuda/Loo failid:
   - `src/data/mock/books.mock.ts` (juba 15 - OK)
   - Loo: `src/data/mock/authors.mock.ts` (5-7)
   - Loo: `src/data/mock/publishers.mock.ts` (3-4)
   - Loo: `src/data/mock/reviews.mock.ts` (10-15)
   - Loo: `src/data/mock/genres.mock.ts` (5+)
-- [ ] Muuda vastavad teenused kasutama neid mock faile.
+- [x] Muuda vastavad teenused kasutama neid mock faile.
 
 ### 1.5 App wiring
-- [ ] Muuda faili: `src/index.ts`
+- [x] Muuda faili: `src/index.ts`
   - Lisa not-found handler.
   - Lisa globaalne error middleware lõppu.
 
 OSA 1 kontroll:
-- [ ] `POST/GET/PUT/DELETE /api/v1/books` töötab.
-- [ ] `POST /api/v1/books/:id/reviews` töötab.
-- [ ] `GET /api/v1/books/:id/reviews` töötab.
-- [ ] `GET /api/v1/books/:id/average-rating` töötab.
-- [ ] Vähemalt 3 filtrit + sort + pagination töötab.
-- [ ] Zod valideerimine ja ühtne veavastus töötab.
+- [x] `POST/GET/PUT/DELETE /api/v1/books` töötab.
+- [x] `POST /api/v1/books/:id/reviews` töötab.
+- [x] `GET /api/v1/books/:id/reviews` töötab.
+- [x] `GET /api/v1/books/:id/average-rating` töötab.
+- [x] Vähemalt 3 filtrit + sort + pagination töötab.
+- [x] Zod valideerimine ja ühtne veavastus töötab.
 
 ---
 

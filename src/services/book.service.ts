@@ -1,20 +1,44 @@
 import * as bookServiceDb from "./book.service.db";
 import * as bookServiceMock from "./book.service.mock";
+import {
+  Book,
+  BookListQuery,
+  PaginatedBooksResponse,
+} from "../models/book.model";
 
 export const useMock = process.env.USE_MOCK === "true";
 
-export const getBooks = useMock
-  ? bookServiceMock.getBooks
-  : bookServiceDb.getBooks;
-export const getBookById = useMock
-  ? bookServiceMock.getBookById
-  : bookServiceDb.getBookById;
-export const addBook = useMock
-  ? bookServiceMock.addBook
-  : bookServiceDb.addBook;
-export const updateBook = useMock
-  ? bookServiceMock.updateBook
-  : bookServiceDb.updateBook;
-export const deleteBook = useMock
-  ? bookServiceMock.deleteBook
-  : bookServiceDb.deleteBook;
+export async function getBooks(
+  query: BookListQuery = {},
+): Promise<PaginatedBooksResponse> {
+  return useMock
+    ? bookServiceMock.getBooks(query)
+    : bookServiceDb.getBooks(query);
+}
+
+export async function getBookById(id: number): Promise<Book | null> {
+  return useMock
+    ? bookServiceMock.getBookById(id)
+    : bookServiceDb.getBookById(id);
+}
+
+export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
+  return useMock
+    ? bookServiceMock.addBook(newBook)
+    : bookServiceDb.addBook(newBook);
+}
+
+export async function updateBook(
+  id: number,
+  updatedBook: Partial<Book>,
+): Promise<Book | undefined> {
+  return useMock
+    ? bookServiceMock.updateBook(id, updatedBook)
+    : bookServiceDb.updateBook(id, updatedBook);
+}
+
+export async function deleteBook(id: number): Promise<boolean> {
+  return useMock
+    ? bookServiceMock.deleteBook(id)
+    : bookServiceDb.deleteBook(id);
+}

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 import {
   Book,
   BookListQuery,
@@ -126,7 +126,7 @@ export async function getBookById(id: number): Promise<Book | null> {
   return prisma.book.findUnique({ where: { id } });
 }
 
-export async function addBook(newBook: Book): Promise<Book> {
+export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
   const createdBook = await prisma.book.create({ data: newBook });
   return createdBook;
 }
