@@ -15,47 +15,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Book mudel
 model Book {
-  id Int @id @default(autoincrement())
-  title String @db.VarChar(255)
+  id            Int       @id @default(autoincrement())
+  title         String    @db.VarChar(255)
+  isbn          String?   @unique @db.VarChar(32)
   publishedYear Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  pageCount     Int?
+  language      String    @db.VarChar(64)
+  description   String?   @db.Text
+  coverImage    String?   @db.VarChar(2048)
+  authorId      Int
+  publisherId   Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // Many-to-many seos autoritega
-  authors AuthorBook[]
+  author    Author    @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  publisher Publisher @relation(fields: [publisherId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  genres    BookGenre[]
+  reviews   Review[]
 
+  @@index([title])
+  @@index([publishedYear])
+  @@index([language])
+  @@index([authorId])
+  @@index([publisherId])
+  @@index([title, publishedYear])
   @@map("books")
   @@schema("books_api")
 }
 
-// Author mudel
 model Author {
-  id Int @id @default(autoincrement())
-  firstName String @db.VarChar(100)
-  lastName String @db.VarChar(100)
+  id        Int      @id @default(autoincrement())
+  firstName String   @db.VarChar(100)
+  lastName  String   @db.VarChar(100)
+  birthYear Int?
+  bio       String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Many-to-many seos raamatutega
-  books AuthorBook[]
+  books Book[]
 
+  @@index([lastName, firstName])
+  @@map("authors")
   @@schema("books_api")
 }
 
-// AuthorBook - side tabel
-model AuthorBook {
-  id Int @id @default(autoincrement())
-  authorId Int @map("author_id")
-  bookId Int @map("book_id")
+model Publisher {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(150)
+  country     String   @db.VarChar(100)
+  foundedYear Int?
+  website     String?  @db.VarChar(2048)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  // Relatsioonid
-  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  books Book[]
 
-  // Unikaalne kombinatsioon
-  @@unique([authorId, bookId])
-  @@map("author_books")
+  @@index([name])
+  @@map("publishers")
+  @@schema("books_api")
+}
+
+model Genre {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  books BookGenre[]
+
+  @@index([name])
+  @@map("genres")
+  @@schema("books_api")
+}
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  bookId       Int
+  reviewerName String   @db.VarChar(200)
+  rating       Int
+  comment      String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([bookId])
+  @@index([rating])
+  @@map("reviews")
+  @@schema("books_api")
+}
+
+model BookGenre {
+  bookId  Int
+  genreId Int
+
+  book  Book  @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([bookId, genreId])
+  @@index([genreId])
+  @@map("book_genres")
   @@schema("books_api")
 }

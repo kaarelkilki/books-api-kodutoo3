@@ -5,6 +5,7 @@ Eesmärk: viia projekt vastavusse ülesande kohustusliku miinimumiga (OSA 1 + OS
 ## 0. Kiirparandused enne funktsionaalsust
 
 ### 0.1 Paranda repo baasseadistus
+
 - [x] Muuda faili: `.gitignore`
   - Eemalda vigane PowerShelli teksti-jääk.
   - Jäta sisse vähemalt:
@@ -18,11 +19,13 @@ Eesmärk: viia projekt vastavusse ülesande kohustusliku miinimumiga (OSA 1 + OS
   - Vajadusel lisa `USE_MOCK=true` / `USE_MOCK=false`.
 
 ### 0.2 Lisa puuduolevad sõltuvused
+
 - [x] Muuda faili: `package.json`
   - Lisa `zod`.
   - (Soovi korral) lisa skriptid: `prisma:migrate`, `prisma:generate`, `seed` täpsustatud kujul.
 
 Kontroll:
+
 - [x] `npm install` töötab veata.
 
 ---
@@ -30,6 +33,7 @@ Kontroll:
 ## 1. OSA 1 - Mock API nõuete täitmine
 
 ## 1.1 Ühtne arhitektuur (validators + middleware)
+
 - [x] Loo kaust: `src/validators/`
 - [x] Loo fail: `src/validators/book.validator.ts`
   - Book create/update Zod skeemid.
@@ -46,6 +50,7 @@ Kontroll:
   - Üldine request validation helper Zodile.
 
 ### 1.2 Books CRUD + query (mock režiimis)
+
 - [x] Muuda faili: `src/routes/book.routes.ts`
   - Hoia CRUD endpointid.
   - Lisa:
@@ -61,6 +66,7 @@ Kontroll:
   - Lisa pagination (`page`, `limit`) + meta arvutused.
 
 ### 1.3 Reviews seotud Bookiga (mock)
+
 - [x] Muuda faili: `src/services/review.service.ts`
   - Lisa funktsioonid:
     - `getReviewsByBookId(bookId, query)`
@@ -70,6 +76,7 @@ Kontroll:
   - Vajadusel jaga üldised review endpointid ja book-based endpointid.
 
 ### 1.4 Mock andmete minimaalne maht
+
 - [x] Muuda/Loo failid:
   - `src/data/mock/books.mock.ts` (juba 15 - OK)
   - Loo: `src/data/mock/authors.mock.ts` (5-7)
@@ -79,11 +86,13 @@ Kontroll:
 - [x] Muuda vastavad teenused kasutama neid mock faile.
 
 ### 1.5 App wiring
+
 - [x] Muuda faili: `src/index.ts`
   - Lisa not-found handler.
   - Lisa globaalne error middleware lõppu.
 
 OSA 1 kontroll:
+
 - [x] `POST/GET/PUT/DELETE /api/v1/books` töötab.
 - [x] `POST /api/v1/books/:id/reviews` töötab.
 - [x] `GET /api/v1/books/:id/reviews` töötab.
@@ -96,6 +105,7 @@ OSA 1 kontroll:
 ## 2. OSA 2 - PostgreSQL + Prisma täielikuks
 
 ## 2.1 Prisma schema viia nõuetele vastavaks
+
 - [ ] Muuda faili: `prisma/schema.prisma`
   - Täienda mudelid:
     - `Author` (1:N Books)
@@ -108,6 +118,7 @@ OSA 1 kontroll:
   - Lisa vajalikud `onDelete` reeglid (cascade kus mõistlik).
 
 ## 2.2 Migratsioonid + seed
+
 - [ ] Käivita: `npx prisma migrate dev --name full-domain-model`
 - [ ] Muuda faili: `prisma/seed.ts`
   - Sisesta kõik olemid (authors, publishers, genres, books, reviews).
@@ -115,6 +126,7 @@ OSA 1 kontroll:
 - [ ] Käivita: `npm run seed`
 
 ## 2.3 Endpointid DB peale
+
 - [ ] Muuda faili: `src/services/book.service.db.ts`
   - Rakenda query filtrid/sort/pagination Prisma `where/orderBy/skip/take` abil.
   - Kasuta `include` seotud andmete laadimiseks.
@@ -127,6 +139,7 @@ OSA 1 kontroll:
   - Ühtne response nii mock kui DB režiimis.
 
 OSA 2 kontroll:
+
 - [ ] Kõik OSA 1 nõutud endpointid töötavad DB peal.
 - [ ] Prisma include + average-rating olemas.
 - [ ] Prisma vead on kaetud (409/404/500 vastused).
@@ -136,6 +149,7 @@ OSA 2 kontroll:
 ## 3. Dokumentatsioon ja esitamise nõuded
 
 ## 3.1 README viia hindamise nõuetele vastavaks
+
 - [ ] Muuda faili: `README.md`
   - Lisa autor(id) ja ülesannete jaotus.
   - Lisa setup sammud (install, env, migrate, seed, run).
@@ -147,10 +161,12 @@ OSA 2 kontroll:
   - Lisa pordid (Express 3000; Fastify 3001 ainult kui meeskonnatöö nõuab).
 
 ## 3.2 Soovi korral OpenAPI
+
 - [ ] Loo: `openapi.yaml` või `docs/openapi.yaml`.
 - [ ] Lisa README-sse viide.
 
 Kontroll:
+
 - [ ] Repo sisaldab: `README.md`, `.env.example`, `.gitignore`, `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`, `src/`.
 
 ---
@@ -158,6 +174,7 @@ Kontroll:
 ## 4. Git workflow ja hindepunktid
 
 ## 4.1 Ajalugu korrastada edaspidi
+
 - [ ] Loo feature-harud:
   - `feature/validation-and-errors`
   - `feature/books-query-pagination`
@@ -167,6 +184,7 @@ Kontroll:
 - [ ] Tee merge läbi PR-ide (eriti kui meeskond).
 
 Märkus:
+
 - Kui oled üksinda, Fastify ei ole kohustuslik.
 - Kui olete 2-liikmeline meeskond, lisa ka Fastify implementeering.
 
@@ -185,7 +203,7 @@ Märkus:
 
 ## 6. Definition of Done (DoD)
 
-- [ ] OSA 1 nõuded töötavad täielikult mock andmetega.
+- [x] OSA 1 nõuded töötavad täielikult mock andmetega.
 - [ ] OSA 2 nõuded töötavad PostgreSQL + Prisma peal.
 - [ ] Errorid on ühtses formaadis.
 - [ ] Pagination response vastab nõutud struktuurile.
