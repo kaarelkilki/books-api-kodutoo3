@@ -106,7 +106,7 @@ OSA 1 kontroll:
 
 ## 2.1 Prisma schema viia nõuetele vastavaks
 
-- [ ] Muuda faili: `prisma/schema.prisma`
+- [x] Muuda faili: `prisma/schema.prisma`
   - Täienda mudelid:
     - `Author` (1:N Books)
     - `Publisher` (1:N Books)
@@ -119,11 +119,11 @@ OSA 1 kontroll:
 
 ## 2.2 Migratsioonid + seed
 
-- [ ] Käivita: `npx prisma migrate dev --name full-domain-model`
-- [ ] Muuda faili: `prisma/seed.ts`
+- [x] Käivita: `npx prisma migrate dev --name init`
+- [x] Muuda faili: `prisma/seed.ts`
   - Sisesta kõik olemid (authors, publishers, genres, books, reviews).
   - Seo raamatud autori, kirjastaja ja žanritega.
-- [ ] Käivita: `npm run seed`
+- [x] Käivita: `npm run seed`
 
 ## 2.3 Endpointid DB peale
 
