@@ -94,7 +94,13 @@ export async function getReviewsByBookId(
 export async function addReviewForBook(
   bookId: number,
   payload: Omit<Review, "id" | "bookId">,
-): Promise<Review> {
+): Promise<Review | null> {
+  if (!isMockEnabled()) {
+    const bookCount = await prisma.book.count({ where: { id: bookId } });
+    if (bookCount === 0) {
+      return null;
+    }
+  }
   const reviewToAdd: Omit<Review, "id"> = {
     bookId,
     reviewerName: payload.reviewerName,

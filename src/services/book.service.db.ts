@@ -9,6 +9,15 @@ const prisma = new PrismaClient();
 const DEFAULT_PUBLISHER_NAME = "Unknown Publisher";
 const DEFAULT_PUBLISHER_COUNTRY = "Unknown";
 
+function isPrismaKnownError(error: unknown, code: string): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: unknown }).code === code
+  );
+}
+
 type BookWithAverageRating = Book & {
   averageRating: number | null;
 };
@@ -336,18 +345,26 @@ export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
     resolvePublisherId(),
   ]);
 
-  const createdBook = await prisma.book.create({
-    data: {
-      title: newBook.title,
-      publishedYear: newBook.publishedYear,
-      language: newBook.language,
-      authorId,
-      publisherId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  let createdBook: { id: number };
+  try {
+    createdBook = await prisma.book.create({
+      data: {
+        title: newBook.title,
+        publishedYear: newBook.publishedYear,
+        language: newBook.language,
+        authorId,
+        publisherId,
+      },
+      select: {
+        id: true,
+      },
+    });
+  } catch (error) {
+    if (isPrismaKnownError(error, "P2002")) {
+      throw makeHttpError("A book with this ISBN already exists", 409);
+    }
+    throw error;
+  }
 
   await replaceBookGenres(createdBook.id, parseGenreNames(newBook.genre));
 
@@ -357,6 +374,12 @@ export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
   }
 
   return savedBook;
+}
+
+function makeHttpError(message: string, statusCode: number): Error {
+  const err = new Error(message) as Error & { statusCode: number };
+  err.statusCode = statusCode;
+  return err;
 }
 
 export async function updateBook(
@@ -405,11 +428,19 @@ export async function updateBook(
   return savedBook ?? undefined;
 }
 
+export async function bookExists(id: number): Promise<boolean> {
+  const count = await prisma.book.count({ where: { id } });
+  return count > 0;
+}
+
 export async function deleteBook(id: number): Promise<boolean> {
   try {
     await prisma.book.delete({ where: { id } });
     return true;
   } catch (error) {
-    return false;
+    if (isPrismaKnownError(error, "P2025")) {
+      return false;
+    }
+    throw error;
   }
 }

@@ -140,9 +140,9 @@ OSA 1 kontroll:
 
 OSA 2 kontroll:
 
-- [ ] Kõik OSA 1 nõutud endpointid töötavad DB peal.
-- [ ] Prisma include + average-rating olemas.
-- [ ] Prisma vead on kaetud (409/404/500 vastused).
+- [x] Kõik OSA 1 nõutud endpointid töötavad DB peal.
+- [x] Prisma include + average-rating olemas.
+- [x] Prisma vead on kaetud (409/404/500 vastused).
 
 ---
 
@@ -204,7 +204,7 @@ Märkus:
 ## 6. Definition of Done (DoD)
 
 - [x] OSA 1 nõuded töötavad täielikult mock andmetega.
-- [ ] OSA 2 nõuded töötavad PostgreSQL + Prisma peal.
+- [x] OSA 2 nõuded töötavad PostgreSQL + Prisma peal.
 - [ ] Errorid on ühtses formaadis.
 - [ ] Pagination response vastab nõutud struktuurile.
 - [ ] README katab kõik endpointid + näited.

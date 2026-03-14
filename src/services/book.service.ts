@@ -48,3 +48,11 @@ export async function deleteBook(id: number): Promise<boolean> {
     ? bookServiceMock.deleteBook(id)
     : bookServiceDb.deleteBook(id);
 }
+
+export async function bookExists(id: number): Promise<boolean> {
+  if (isMockEnabled()) {
+    const book = await bookServiceMock.getBookById(id);
+    return book !== null;
+  }
+  return bookServiceDb.bookExists(id);
+}

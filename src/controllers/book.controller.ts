@@ -120,7 +120,12 @@ export async function addBook(req: Request, res: Response): Promise<void> {
     const addedBook = await bookService.addBook(parsedBook.data);
     res.status(201).json(normalizeBookResponse(addedBook));
   } catch (error) {
-    res.status(500).json({ error: "Error adding book", details: [] });
+    const statusCode = (error as any)?.statusCode;
+    if (statusCode === 409) {
+      res.status(409).json({ error: (error as Error).message, details: [] });
+    } else {
+      res.status(500).json({ error: "Error adding book", details: [] });
+    }
   }
 }
 
@@ -178,6 +183,11 @@ export async function getBookReviews(
     return;
   }
   try {
+    const exists = await bookService.bookExists(bookId);
+    if (!exists) {
+      res.status(404).json({ error: "Book not found", details: [] });
+      return;
+    }
     const reviews = await reviewService.getReviewsByBookId(
       bookId,
       parsedQuery.data,
@@ -202,6 +212,10 @@ export async function addBookReview(
   }
   try {
     const review = await reviewService.addReviewForBook(bookId, parsed.data);
+    if (review === null) {
+      res.status(404).json({ error: "Book not found", details: [] });
+      return;
+    }
     res.status(201).json(review);
   } catch (error) {
     res
@@ -234,6 +248,11 @@ export async function getBookAverageRating(
 ): Promise<void> {
   const bookId = parseInt(req.params.id as string, 10);
   try {
+    const exists = await bookService.bookExists(bookId);
+    if (!exists) {
+      res.status(404).json({ error: "Book not found", details: [] });
+      return;
+    }
     const averageRating = await reviewService.getAverageRatingForBook(bookId);
     res.json({ bookId, averageRating });
   } catch (error) {
