@@ -1,7 +1,11 @@
 import * as bookService from "../services/book.service";
 import * as reviewService from "../services/review.service";
 import { Request, Response } from "express";
-import { BookListQuery } from "../models/book.model";
+import {
+  Book,
+  BookListQuery,
+  PaginatedBooksResponse,
+} from "../models/book.model";
 import {
   createBookSchema,
   getBooksQuerySchema,
@@ -39,6 +43,34 @@ function normalizeBooksQuery(query: Request["query"]): BookListQuery {
   };
 }
 
+type BookResponse = Book & {
+  averageRating: number | null;
+};
+
+function normalizeBookResponse(book: Book): BookResponse {
+  const bookWithAverage = book as Book & { averageRating?: number | null };
+
+  return {
+    id: book.id,
+    title: book.title,
+    publishedYear: book.publishedYear,
+    author: book.author,
+    language: book.language,
+    genre: book.genre,
+    averageRating: bookWithAverage.averageRating ?? null,
+  };
+}
+
+function normalizePaginatedBooksResponse(books: PaginatedBooksResponse): {
+  data: BookResponse[];
+  pagination: PaginatedBooksResponse["pagination"];
+} {
+  return {
+    data: books.data.map(normalizeBookResponse),
+    pagination: books.pagination,
+  };
+}
+
 export async function getBooks(req: Request, res: Response): Promise<void> {
   try {
     const parsedQuery = getBooksQuerySchema.safeParse(
@@ -54,7 +86,7 @@ export async function getBooks(req: Request, res: Response): Promise<void> {
     }
 
     const books = await bookService.getBooks(parsedQuery.data);
-    res.json(books);
+    res.json(normalizePaginatedBooksResponse(books));
   } catch (error) {
     res.status(500).json({ error: "Error fetching books", details: [] });
   }
@@ -65,7 +97,7 @@ export async function getBookById(req: Request, res: Response): Promise<void> {
   try {
     const book = await bookService.getBookById(id);
     if (book) {
-      res.json(book);
+      res.json(normalizeBookResponse(book));
     } else {
       res.status(404).json({ error: "Book not found", details: [] });
     }
@@ -86,7 +118,7 @@ export async function addBook(req: Request, res: Response): Promise<void> {
 
   try {
     const addedBook = await bookService.addBook(parsedBook.data);
-    res.status(201).json(addedBook);
+    res.status(201).json(normalizeBookResponse(addedBook));
   } catch (error) {
     res.status(500).json({ error: "Error adding book", details: [] });
   }
@@ -106,7 +138,7 @@ export async function updateBook(req: Request, res: Response): Promise<void> {
   try {
     const updatedBook = await bookService.updateBook(id, parsedBook.data);
     if (updatedBook) {
-      res.json(updatedBook);
+      res.json(normalizeBookResponse(updatedBook));
     } else {
       res.status(404).json({ error: "Book not found", details: [] });
     }

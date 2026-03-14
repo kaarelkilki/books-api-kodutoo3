@@ -127,15 +127,15 @@ OSA 1 kontroll:
 
 ## 2.3 Endpointid DB peale
 
-- [ ] Muuda faili: `src/services/book.service.db.ts`
+- [x] Muuda faili: `src/services/book.service.db.ts`
   - Rakenda query filtrid/sort/pagination Prisma `where/orderBy/skip/take` abil.
   - Kasuta `include` seotud andmete laadimiseks.
   - Lisa average-rating agregatsioon.
-- [ ] Muuda faili: `src/services/review.service.ts`
+- [x] Muuda faili: `src/services/review.service.ts`
   - Kui `USE_MOCK=false`, kasuta Prisma andmebaasi.
-- [ ] Muuda faili: `src/services/book.service.ts`
+- [x] Muuda faili: `src/services/book.service.ts`
   - Veendu, et toggle mock/db katab kõik vajalikud funktsioonid.
-- [ ] Muuda faili: `src/controllers/book.controller.ts`
+- [x] Muuda faili: `src/controllers/book.controller.ts`
   - Ühtne response nii mock kui DB režiimis.
 
 OSA 2 kontroll:

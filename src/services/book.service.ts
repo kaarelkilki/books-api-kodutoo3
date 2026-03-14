@@ -6,24 +6,30 @@ import {
   PaginatedBooksResponse,
 } from "../models/book.model";
 
-export const useMock = process.env.USE_MOCK === "true";
+function isMockEnabled(): boolean {
+  return process.env.USE_MOCK === "true";
+}
+
+export function getDataSourceMode(): "mock" | "db" {
+  return isMockEnabled() ? "mock" : "db";
+}
 
 export async function getBooks(
   query: BookListQuery = {},
 ): Promise<PaginatedBooksResponse> {
-  return useMock
+  return isMockEnabled()
     ? bookServiceMock.getBooks(query)
     : bookServiceDb.getBooks(query);
 }
 
 export async function getBookById(id: number): Promise<Book | null> {
-  return useMock
+  return isMockEnabled()
     ? bookServiceMock.getBookById(id)
     : bookServiceDb.getBookById(id);
 }
 
 export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
-  return useMock
+  return isMockEnabled()
     ? bookServiceMock.addBook(newBook)
     : bookServiceDb.addBook(newBook);
 }
@@ -32,13 +38,13 @@ export async function updateBook(
   id: number,
   updatedBook: Partial<Book>,
 ): Promise<Book | undefined> {
-  return useMock
+  return isMockEnabled()
     ? bookServiceMock.updateBook(id, updatedBook)
     : bookServiceDb.updateBook(id, updatedBook);
 }
 
 export async function deleteBook(id: number): Promise<boolean> {
-  return useMock
+  return isMockEnabled()
     ? bookServiceMock.deleteBook(id)
     : bookServiceDb.deleteBook(id);
 }
