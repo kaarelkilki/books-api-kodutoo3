@@ -150,8 +150,8 @@ OSA 2 kontroll:
 
 ## 3.1 README viia hindamise nõuetele vastavaks
 
-- [ ] Muuda faili: `README.md`
-  - Lisa autor(id) ja ülesannete jaotus.
+- [x] Muuda faili: `README.md`
+  - Lisa autor ja ülesannete jaotus.
   - Lisa setup sammud (install, env, migrate, seed, run).
   - Lisa endpointide loetelu.
   - Lisa request/response näited.
@@ -160,52 +160,6 @@ OSA 2 kontroll:
   - Lisa cURL näited.
   - Lisa pordid (Express 3000; Fastify 3001 ainult kui meeskonnatöö nõuab).
 
-## 3.2 Soovi korral OpenAPI
-
-- [ ] Loo: `openapi.yaml` või `docs/openapi.yaml`.
-- [ ] Lisa README-sse viide.
-
 Kontroll:
 
-- [ ] Repo sisaldab: `README.md`, `.env.example`, `.gitignore`, `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`, `src/`.
-
----
-
-## 4. Git workflow ja hindepunktid
-
-## 4.1 Ajalugu korrastada edaspidi
-
-- [ ] Loo feature-harud:
-  - `feature/validation-and-errors`
-  - `feature/books-query-pagination`
-  - `feature/prisma-full-schema`
-  - `feature/readme-docs`
-- [ ] Tee väiksed, kirjeldavad commitid.
-- [ ] Tee merge läbi PR-ide (eriti kui meeskond).
-
-Märkus:
-
-- Kui oled üksinda, Fastify ei ole kohustuslik.
-- Kui olete 2-liikmeline meeskond, lisa ka Fastify implementeering.
-
----
-
-## 5. Soovituslik teostusjärjekord (kõige kiirem tee)
-
-1. Paranda `.gitignore` + lisa `.env.example` + lisa `zod`.
-2. Tee OSA 1 valmis (validators, middleware, books query, reviews-by-book, average-rating).
-3. Täienda Prisma schema ja migratsioonid.
-4. Tee DB teenused vastavaks OSA 1 endpointidele.
-5. Täienda README koos cURL näidetega.
-6. Lõpptest: mock režiim + db režiim.
-
----
-
-## 6. Definition of Done (DoD)
-
-- [x] OSA 1 nõuded töötavad täielikult mock andmetega.
-- [x] OSA 2 nõuded töötavad PostgreSQL + Prisma peal.
-- [ ] Errorid on ühtses formaadis.
-- [ ] Pagination response vastab nõutud struktuurile.
-- [ ] README katab kõik endpointid + näited.
-- [ ] Repo sisaldab kõiki kohustuslikke faile.
+- [x] Repo sisaldab: `README.md`, `.env.example`, `.gitignore`, `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`, `src/`.

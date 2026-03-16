@@ -59,7 +59,7 @@ function hasUniformErrorShape(payload) {
 }
 
 async function main() {
-  console.log(`\n=== OSA 1 smoke test ===`);
+  console.log(`\n=== Books API smoke test ===`);
   console.log(`Target: ${baseUrl}\n`);
 
   console.log(`[Books - list & pagination]`);
