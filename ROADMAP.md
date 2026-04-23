@@ -163,3 +163,205 @@ OSA 2 kontroll:
 Kontroll:
 
 - [x] Repo sisaldab: `README.md`, `.env.example`, `.gitignore`, `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`, `src/`.
+
+---
+
+## 4. OSA 3 - React Frontend (individuaalne)
+
+Eesmärk: ehitada React + TypeScript frontend, mis kasutab olemasolevat backend API-t ja katab kõik kohustuslikud vaated/funktsioonid.
+
+Märkus individuaalse töö kohta:
+
+- [ ] Fookus ainult kohustuslikel vaadetel ja funktsioonidel.
+- [ ] Boonusülesanded teosta ainult siis, kui põhinõuded on täielikult valmis ja testitud.
+- [ ] Meeskonna PR/code review nõue ei rakendu, kuid git ajalugu peab siiski peegeldama päris arendust.
+
+## 4.1 Frontendi projekti loomine ja baasseadistus
+
+- [ ] Loo kaust `frontend/` (või eraldi repo, kui otsustad lahutada).
+- [ ] Initsialiseeri projekt: React + TypeScript + Vite.
+- [ ] Lisa sõltuvused: `axios`, `react-router-dom@6`, `tailwindcss`, `postcss`, `autoprefixer`.
+- [ ] Seadista Tailwind CSS.
+- [ ] Loo `.env.example` frontendi jaoks:
+  - `VITE_API_URL=http://localhost:3000/api/v1`
+- [ ] Loo `.gitignore` frontendi jaoks:
+  - `node_modules`
+  - `dist`
+  - `.env`
+
+Kontroll:
+
+- [ ] `npm install` töötab.
+- [ ] `npm run dev` käivitab rakenduse.
+- [ ] `npm run build` läheb veata läbi.
+
+## 4.2 Koodistruktuur ja tüübid
+
+- [ ] Loo fail `frontend/src/api.ts`
+  - Axios instants (`baseURL = import.meta.env.VITE_API_URL`).
+  - Kõik API funktsioonid ühes kohas.
+  - TypeScript tüübid kõikidele vastustele/payloadidele.
+- [ ] Loo kaustad:
+  - `frontend/src/pages/`
+  - `frontend/src/components/`
+  - `frontend/src/types/` (kui soovid tüübid eraldada)
+  - `frontend/src/hooks/` (kui vajad korduskasutatavat päringuloogikat)
+- [ ] Kehtesta reegel: `any` ei kasutata.
+
+Kontroll:
+
+- [ ] Ükski komponent ei tee otsest HTTP-kutset väljaspool `api.ts`.
+- [ ] Kõik API vastused on tüübitud.
+
+## 4.3 Router ja navigeerimine
+
+- [ ] Seadista React Router v6 teed:
+  - `/books`
+  - `/books/:id`
+- [ ] Lisa fallback route (404 vaade või suunamine `/books`).
+- [ ] Lisa navigeerimisnupud:
+  - detailist tagasi nimekirja
+  - nimekirjast detaili
+
+Kontroll:
+
+- [ ] Otselingid töötavad brauseri refreshi järel.
+
+## 4.4 Vaade: Raamatute nimekiri `/books`
+
+- [ ] Loo fail `frontend/src/pages/BooksPage.tsx`.
+- [ ] Kuva raamatud kaartidena või tabelina (pealkiri, autor, aasta, žanrid).
+- [ ] Lisa filtrid (vähemalt 3):
+  - pealkiri
+  - aasta
+  - keel
+- [ ] Lisa sorteerimine:
+  - välja järgi: pealkiri või aasta
+  - järjekord: kasvav/kahanev
+- [ ] Lisa pagination:
+  - `page`, `limit`
+  - edasi/tagasi või leheküljenumbrid
+- [ ] Lisa nupp "Lisa raamat" (vormi avamine samal lehel või eraldi vaatel).
+- [ ] Iga raamatu juures:
+  - nupp "Vaata" -> `/books/:id`
+  - nupp "Kustuta" -> kustutab ja värskendab nimekirja
+
+Kontroll:
+
+- [ ] Filtrid, sort ja pagination töötavad samaaegselt.
+- [ ] URL query params kasutus on soovituslik (hea UX + lihtsam testida).
+
+## 4.5 Vaade: Raamatu detail `/books/:id`
+
+- [ ] Loo fail `frontend/src/pages/BookDetailPage.tsx`.
+- [ ] Kuva kõik raamatu andmed:
+  - pealkiri, ISBN, aasta, lehekülgede arv, keel, kirjeldus
+  - autor, kirjastus, žanrid
+- [ ] Küsi ja kuva keskmine hinnang endpointist:
+  - `GET /books/:id/average-rating`
+- [ ] Lisa nupp "Muuda" (eeltäidetud muutmisvorm).
+- [ ] Lisa nupp "Kustuta" (järel suuna `/books`).
+- [ ] Küsi ja kuva arvustused:
+  - `GET /books/:id/reviews`
+- [ ] Lisa arvustuse lisamise vorm:
+  - kasutajanimi
+  - hinnang 1..5
+  - kommentaar
+- [ ] Lisa nupp "Tagasi nimekirja".
+
+Kontroll:
+
+- [ ] Detailvaade uuendab andmeid pärast muutmist/kustutamist/lisatud arvustust.
+
+## 4.6 Kohustuslik tehniline kvaliteet
+
+- [ ] AbortController kõigis `useEffect` päringutes.
+- [ ] Igal päringul on `loading` olek.
+- [ ] Igal päringul on `error` olek kasutajasõbraliku sõnumiga.
+- [ ] Kinnitused enne kustutamist (vältimaks juhuslikku delete'i).
+- [ ] Väldi duplikaatpäringuid (nt debounce filtrile, kui vajalik).
+
+Kontroll:
+
+- [ ] Lehelt lahkumisel katkestatakse pooleliolev päring.
+- [ ] Konsoolis ei teki unmounted-state uuenduse hoiatusi.
+
+## 4.7 UI/UX (Tailwind)
+
+- [ ] Rakenda ühtne disainisüsteem:
+  - spacing, värvid, tüpograafia
+  - nupud, inputid, kaardid
+- [ ] Tee vaated kasutatavaks nii desktopis kui mobiilis.
+- [ ] Lisa selge visualiseerimine:
+  - loading spinner/skeleton
+  - error alert
+  - empty state
+
+Kontroll:
+
+- [ ] Bootstrapi ei kasutata.
+- [ ] Tailwind klassid on järjepidevad ja loetavad.
+
+## 4.8 Dokumentatsioon ja esitamine (frontend)
+
+- [ ] Uuenda `README.md` (või `frontend/README.md`) minimaalse sisuga:
+  - autor(id) ja ülesannete jaotus (individuaalsel juhul märgi, et töö tegija on 1)
+  - installatsioonijuhised
+  - käivitamise käsud
+  - ekraanipildid vaadetest
+  - link backend repo(le)
+- [ ] Veendu, et olemas on `.env.example` ja korrektne `.gitignore`.
+- [ ] Veendu, et kogu frontendi kood on `src/` all.
+
+Kontroll:
+
+- [ ] Hindaja saab projekti nullist käima ainult README järgi.
+
+## 4.9 Git töövoog (individuaalne)
+
+- [ ] Kasuta väikseid ja kirjeldavaid commit'eid (mitte üks suur commit).
+- [ ] Soovituslikud harud:
+  - `feature/frontend-setup`
+  - `feature/books-list`
+  - `feature/book-detail`
+  - `feature/reviews`
+  - `feature/ui-polish`
+- [ ] Kui töötad ainult `main` harus, hoia commitid loogiliste osadena eristatavad.
+
+Kontroll:
+
+- [ ] Git log näitab reaalse arenduse etappe.
+
+## 4.10 Valmiduse lõppkontroll hindamiskriteeriumi järgi
+
+- [ ] Põhifunktsionaalsus (3p):
+  - books list + detail + CRUD töötab
+  - arvustuse lisamine töötab
+- [ ] Otsing/sort/pagination (2p):
+  - vähemalt 3 filtrit
+  - sort töötab mõlemas suunas
+  - pagination navigeerimine töötab
+- [ ] Tehniline kvaliteet (2p):
+  - TypeScript ilma `any`
+  - AbortController
+  - eraldi `api.ts`
+  - loading + error olekud
+- [ ] UI/UX (2p):
+  - Tailwind kasutus
+  - loogiline ja kasutatav liides
+- [ ] Git + dokumentatsioon (1p):
+  - kirjeldavad commitid
+  - README + ekraanipildid
+  - `.env.example`
+
+NB! Frontendi hinnatavus eeldab, et backend API töötab stabiilselt.
+
+---
+
+## 5. Boonusülesanded (teha ainult pärast põhinõudeid)
+
+- [ ] `/authors` vaade (autorid + autori raamatud)
+- [ ] Žanrifilter dropdowniga backendist (`GET /genres`)
+- [ ] Arvustuse kustutamine (`DELETE /reviews/:id`)
+- [ ] React Query / TanStack Query kasutuselevõtt
+- [ ] Tootmisbuildi kontroll (`npm run build`) veata
