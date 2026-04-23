@@ -180,7 +180,7 @@ Märkus individuaalse töö kohta:
 
 - [x] Loo kaust `frontend/` (või eraldi repo, kui otsustad lahutada).
 - [x] Initsialiseeri projekt: React + TypeScript + Vite.
-- [ ] Lisa sõltuvused: `axios`, `react-router-dom@6`, `tailwindcss`, `postcss`, `autoprefixer`.
+- [x] Lisa sõltuvused: `axios`, `react-router-dom@6`, `tailwindcss`, `postcss`, `autoprefixer`.
 - [ ] Seadista Tailwind CSS.
 - [ ] Loo `.env.example` frontendi jaoks:
   - `VITE_API_URL=http://localhost:3000/api/v1`
