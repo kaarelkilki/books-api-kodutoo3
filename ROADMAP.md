@@ -178,8 +178,8 @@ Märkus individuaalse töö kohta:
 
 ## 4.1 Frontendi projekti loomine ja baasseadistus
 
-- [ ] Loo kaust `frontend/` (või eraldi repo, kui otsustad lahutada).
-- [ ] Initsialiseeri projekt: React + TypeScript + Vite.
+- [x] Loo kaust `frontend/` (või eraldi repo, kui otsustad lahutada).
+- [x] Initsialiseeri projekt: React + TypeScript + Vite.
 - [ ] Lisa sõltuvused: `axios`, `react-router-dom@6`, `tailwindcss`, `postcss`, `autoprefixer`.
 - [ ] Seadista Tailwind CSS.
 - [ ] Loo `.env.example` frontendi jaoks:
