@@ -181,23 +181,23 @@ Märkus individuaalse töö kohta:
 - [x] Loo kaust `frontend/` (või eraldi repo, kui otsustad lahutada).
 - [x] Initsialiseeri projekt: React + TypeScript + Vite.
 - [x] Lisa sõltuvused: `axios`, `react-router-dom@6`, `tailwindcss`, `postcss`, `autoprefixer`.
-- [ ] Seadista Tailwind CSS.
-- [ ] Loo `.env.example` frontendi jaoks:
+- [x] Seadista Tailwind CSS.
+- [x] Loo `.env.example` frontendi jaoks:
   - `VITE_API_URL=http://localhost:3000/api/v1`
-- [ ] Loo `.gitignore` frontendi jaoks:
+- [x] Loo `.gitignore` frontendi jaoks:
   - `node_modules`
   - `dist`
   - `.env`
 
 Kontroll:
 
-- [ ] `npm install` töötab.
-- [ ] `npm run dev` käivitab rakenduse.
-- [ ] `npm run build` läheb veata läbi.
+- [x] `npm install` töötab.
+- [x] `npm run dev` käivitab rakenduse.
+- [x] `npm run build` läheb veata läbi.
 
 ## 4.2 Koodistruktuur ja tüübid
 
-- [ ] Loo fail `frontend/src/api.ts`
+- [x] Loo fail `frontend/src/api.ts`
   - Axios instants (`baseURL = import.meta.env.VITE_API_URL`).
   - Kõik API funktsioonid ühes kohas.
   - TypeScript tüübid kõikidele vastustele/payloadidele.
