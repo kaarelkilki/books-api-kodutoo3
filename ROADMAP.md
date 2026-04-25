@@ -201,12 +201,12 @@ Kontroll:
   - Axios instants (`baseURL = import.meta.env.VITE_API_URL`).
   - Kõik API funktsioonid ühes kohas.
   - TypeScript tüübid kõikidele vastustele/payloadidele.
-- [ ] Loo kaustad:
+- [x] Loo kaustad:
   - `frontend/src/pages/`
   - `frontend/src/components/`
   - `frontend/src/types/` (kui soovid tüübid eraldada)
   - `frontend/src/hooks/` (kui vajad korduskasutatavat päringuloogikat)
-- [ ] Kehtesta reegel: `any` ei kasutata.
+- [x] Kehtesta reegel: `any` ei kasutata.
 
 Kontroll:
 
