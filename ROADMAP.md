@@ -210,12 +210,12 @@ Kontroll:
 
 Kontroll:
 
-- [ ] Ükski komponent ei tee otsest HTTP-kutset väljaspool `api.ts`.
-- [ ] Kõik API vastused on tüübitud.
+- [x] Ükski komponent ei tee otsest HTTP-kutset väljaspool `api.ts`.
+- [x] Kõik API vastused on tüübitud.
 
 ## 4.3 Router ja navigeerimine
 
-- [ ] Seadista React Router v6 teed:
+- [x] Seadista React Router v6 teed:
   - `/books`
   - `/books/:id`
 - [ ] Lisa fallback route (404 vaade või suunamine `/books`).
