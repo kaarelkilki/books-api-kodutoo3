@@ -218,7 +218,7 @@ Kontroll:
 - [x] Seadista React Router v6 teed:
   - `/books`
   - `/books/:id`
-- [ ] Lisa fallback route (404 vaade või suunamine `/books`).
+- [x] Lisa fallback route (404 vaade või suunamine `/books`).
 - [ ] Lisa navigeerimisnupud:
   - detailist tagasi nimekirja
   - nimekirjast detaili
