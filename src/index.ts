@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, Application } from "express";
+import cors from "cors";
 import bookRoutes from "./routes/book.routes";
 import authorRoutes from "./routes/author.routes";
 import publisherRoutes from "./routes/publisher.routes";
@@ -11,7 +12,13 @@ import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 const app: Application = express();
 // Port number
 const PORT: number = 3000;
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
 // Middleware - JSON parsimiseks
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+  }),
+);
 app.use(express.json());
 // Impordi raamatute marsruudid
 app.use("/api/v1/", bookRoutes);

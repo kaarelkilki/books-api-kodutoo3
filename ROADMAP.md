@@ -231,25 +231,25 @@ Kontroll:
 
 - [x] Loo fail `frontend/src/pages/BooksPage.tsx`.
 - [x] Kuva raamatud kaartidena või tabelina (pealkiri, autor, aasta, žanrid).
-- [ ] Lisa filtrid (vähemalt 3):
+- [x] Lisa filtrid (vähemalt 3):
   - pealkiri
   - aasta
   - keel
-- [ ] Lisa sorteerimine:
+- [x] Lisa sorteerimine:
   - välja järgi: pealkiri või aasta
   - järjekord: kasvav/kahanev
-- [ ] Lisa pagination:
+- [x] Lisa pagination:
   - `page`, `limit`
   - edasi/tagasi või leheküljenumbrid
-- [ ] Lisa nupp "Lisa raamat" (vormi avamine samal lehel või eraldi vaatel).
-- [ ] Iga raamatu juures:
+- [x] Lisa nupp "Lisa raamat" (vormi avamine samal lehel või eraldi vaatel).
+- [x] Iga raamatu juures:
   - nupp "Vaata" -> `/books/:id`
   - nupp "Kustuta" -> kustutab ja värskendab nimekirja
 
 Kontroll:
 
-- [ ] Filtrid, sort ja pagination töötavad samaaegselt.
-- [ ] URL query params kasutus on soovituslik (hea UX + lihtsam testida).
+- [x] Filtrid, sort ja pagination töötavad samaaegselt.
+- [x] URL query params kasutus on soovituslik (hea UX + lihtsam testida).
 
 ## 4.5 Vaade: Raamatu detail `/books/:id`
 

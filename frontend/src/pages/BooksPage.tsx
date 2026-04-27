@@ -1,12 +1,144 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { getBooks, isApiError } from "../api";
-import type { Book } from "../api";
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { createBook, deleteBook, getBooks, isApiError } from "../api";
+import type {
+  Book,
+  BookListQuery,
+  BookSortField,
+  CreateBookPayload,
+  PaginationMeta,
+  SortOrder,
+} from "../api";
+
+const DEFAULT_LIMIT = 6;
+
+const emptyCreateForm: CreateBookPayload = {
+  title: "",
+  author: "",
+  publishedYear: new Date().getFullYear(),
+  language: "",
+  genre: "",
+};
+
+function parsePositiveInteger(value: string | null, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function buildQueryFromSearchParams(
+  searchParams: URLSearchParams,
+): BookListQuery {
+  const title = searchParams.get("title")?.trim() ?? "";
+  const language = searchParams.get("language")?.trim() ?? "";
+  const yearValue = searchParams.get("year")?.trim() ?? "";
+  const sortByValue = searchParams.get("sortBy");
+  const orderValue = searchParams.get("order");
+  const page = parsePositiveInteger(searchParams.get("page"), 1);
+  const limit = parsePositiveInteger(searchParams.get("limit"), DEFAULT_LIMIT);
+
+  const query: BookListQuery = {
+    page,
+    limit,
+  };
+
+  if (title) {
+    query.title = title;
+  }
+
+  if (language) {
+    query.language = language;
+  }
+
+  if (yearValue) {
+    const parsedYear = Number(yearValue);
+    if (Number.isInteger(parsedYear) && parsedYear >= 0) {
+      query.year = parsedYear;
+    }
+  }
+
+  if (sortByValue === "title" || sortByValue === "publishedYear") {
+    query.sortBy = sortByValue;
+  }
+
+  if (orderValue === "asc" || orderValue === "desc") {
+    query.order = orderValue;
+  }
+
+  return query;
+}
+
+function buildSearchParams(query: BookListQuery): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (query.title) {
+    params.set("title", query.title);
+  }
+
+  if (query.year !== undefined) {
+    params.set("year", String(query.year));
+  }
+
+  if (query.language) {
+    params.set("language", query.language);
+  }
+
+  if (query.sortBy) {
+    params.set("sortBy", query.sortBy);
+  }
+
+  if (query.order) {
+    params.set("order", query.order);
+  }
+
+  if (query.page && query.page > 1) {
+    params.set("page", String(query.page));
+  }
+
+  if (query.limit && query.limit !== DEFAULT_LIMIT) {
+    params.set("limit", String(query.limit));
+  }
+
+  return params;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (!isApiError(error)) {
+    return fallback;
+  }
+
+  return error.response?.data?.error ?? fallback;
+}
 
 function BooksPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [books, setBooks] = useState<Book[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] =
+    useState<CreateBookPayload>(emptyCreateForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const query = useMemo(
+    () => buildQueryFromSearchParams(searchParams),
+    [searchParams],
+  );
+
+  const titleFilter = searchParams.get("title") ?? "";
+  const yearFilter = searchParams.get("year") ?? "";
+  const languageFilter = searchParams.get("language") ?? "";
+  const sortBy =
+    (searchParams.get("sortBy") as BookSortField | null) ?? "title";
+  const order = (searchParams.get("order") as SortOrder | null) ?? "asc";
+  const limitValue = String(query.limit ?? DEFAULT_LIMIT);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -15,21 +147,15 @@ function BooksPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await getBooks(undefined, controller.signal);
+        const response = await getBooks(query, controller.signal);
         setBooks(response.data);
+        setPagination(response.pagination);
       } catch (err) {
         if (controller.signal.aborted) {
           return;
         }
 
-        if (isApiError(err)) {
-          setError(
-            err.response?.data?.error ?? "Raamatute laadimine ebaõnnestus.",
-          );
-          return;
-        }
-
-        setError("Tekkis ootamatu viga raamatute laadimisel.");
+        setError(getErrorMessage(err, "Raamatute laadimine ebaonnestus."));
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -42,80 +168,496 @@ function BooksPage() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [query]);
+
+  function updateQuery(nextValues: Partial<BookListQuery>) {
+    const nextQuery: BookListQuery = {
+      ...query,
+      ...nextValues,
+    };
+
+    if (nextQuery.page === undefined || nextQuery.page < 1) {
+      nextQuery.page = 1;
+    }
+
+    setSearchParams(buildSearchParams(nextQuery));
+  }
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const nextTitle = String(formData.get("title") ?? "").trim();
+    const nextYear = String(formData.get("year") ?? "").trim();
+    const nextLanguage = String(formData.get("language") ?? "").trim();
+
+    updateQuery({
+      title: nextTitle || undefined,
+      year: nextYear ? Number(nextYear) : undefined,
+      language: nextLanguage || undefined,
+      page: 1,
+    });
+  }
+
+  function handleSortChange(nextSortBy: BookSortField, nextOrder: SortOrder) {
+    updateQuery({
+      sortBy: nextSortBy,
+      order: nextOrder,
+      page: 1,
+    });
+  }
+
+  async function handleCreateBook(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const controller = new AbortController();
+
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+      await createBook(createForm, controller.signal);
+      setCreateForm(emptyCreateForm);
+      setShowCreateForm(false);
+      updateQuery({ page: 1 });
+      setSearchParams(buildSearchParams({ ...query, page: 1 }));
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Raamatu lisamine ebaonnestus."));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteBook(id: number) {
+    const confirmed = window.confirm(
+      "Kas oled kindel, et soovid selle raamatu kustutada?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    try {
+      setDeletingId(id);
+      setActionError(null);
+      await deleteBook(id, controller.signal);
+
+      const nextPage =
+        books.length === 1 && (query.page ?? 1) > 1 ? (query.page ?? 1) - 1 : 1;
+
+      updateQuery({ page: nextPage });
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Raamatu kustutamine ebaonnestus."));
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  const totalPages = pagination?.totalPages ?? 0;
+  const currentPage = query.page ?? 1;
+  const pageNumbers = Array.from(
+    { length: totalPages },
+    (_, index) => index + 1,
+  );
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">Books</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Raamatud API-st kaardivaates.
-      </p>
+    <main className="min-h-screen bg-slate-50 p-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">
+              Books catalog
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+              Halda oma raamatuvalikut
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              Filtreeri, sorteeri ja halda raamatuid samal vaatel. Seaded
+              salvestuvad URL-i query parameetritesse.
+            </p>
+          </div>
 
-      {loading && (
-        <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
-          Laen raamatuid...
-        </p>
-      )}
+          <button
+            className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            type="button"
+            onClick={() => {
+              setShowCreateForm((current) => !current);
+              setActionError(null);
+            }}
+          >
+            {showCreateForm ? "Sulge vorm" : "Lisa raamat"}
+          </button>
+        </div>
 
-      {error && (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </p>
-      )}
-
-      {!loading && !error && books.length === 0 && (
-        <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
-          Uhtegi raamatut ei leitud.
-        </p>
-      )}
-
-      {!loading && !error && books.length > 0 && (
-        <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {books.map((book) => {
-            const genres = book.genre
-              .split(",")
-              .map((genre) => genre.trim())
-              .filter(Boolean);
-
-            return (
-              <article
-                key={book.id}
-                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+        <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <form
+            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            onSubmit={handleFilterSubmit}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">Filtrid</h2>
+              <button
+                className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
+                type="button"
+                onClick={() => {
+                  setSearchParams(
+                    buildSearchParams({ page: 1, limit: DEFAULT_LIMIT }),
+                  );
+                }}
               >
-                <h2 className="text-lg font-semibold text-slate-900">
-                  {book.title}
-                </h2>
-                <p className="mt-2 text-sm text-slate-700">
-                  Autor: {book.author}
-                </p>
-                <p className="mt-1 text-sm text-slate-700">
-                  Aasta: {book.publishedYear}
-                </p>
+                Tuhjenda
+              </button>
+            </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {genres.map((genre) => (
-                    <span
-                      key={`${book.id}-${genre}`}
-                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Pealkiri</span>
+                <input
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  defaultValue={titleFilter}
+                  name="title"
+                  placeholder="Nt Dune"
+                  type="text"
+                />
+              </label>
 
-                <div className="mt-4">
-                  <Link
-                    className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-                    to={`/books/${book.id}`}
-                  >
-                    Vaata detaili
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Aasta</span>
+                <input
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  defaultValue={yearFilter}
+                  min="0"
+                  name="year"
+                  placeholder="Nt 1965"
+                  type="number"
+                />
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Keel</span>
+                <input
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  defaultValue={languageFilter}
+                  name="language"
+                  placeholder="Nt English"
+                  type="text"
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                type="submit"
+              >
+                Rakenda filtrid
+              </button>
+            </div>
+          </form>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Sorteeri ja kuva
+            </h2>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Sorteeri järgi</span>
+                <select
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  value={sortBy}
+                  onChange={(event) =>
+                    handleSortChange(event.target.value as BookSortField, order)
+                  }
+                >
+                  <option value="title">Pealkiri</option>
+                  <option value="publishedYear">Aasta</option>
+                </select>
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Jarjekord</span>
+                <select
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  value={order}
+                  onChange={(event) =>
+                    handleSortChange(sortBy, event.target.value as SortOrder)
+                  }
+                >
+                  <option value="asc">Kasvav</option>
+                  <option value="desc">Kahanev</option>
+                </select>
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Lehel kuvatakse</span>
+                <select
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  value={limitValue}
+                  onChange={(event) => {
+                    updateQuery({ limit: Number(event.target.value), page: 1 });
+                  }}
+                >
+                  <option value="6">6</option>
+                  <option value="9">9</option>
+                  <option value="12">12</option>
+                </select>
+              </label>
+            </div>
+          </section>
         </section>
-      )}
+
+        {showCreateForm && (
+          <form
+            className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            onSubmit={handleCreateBook}
+          >
+            <h2 className="text-lg font-semibold text-slate-900">
+              Lisa uus raamat
+            </h2>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Pealkiri</span>
+                <input
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  type="text"
+                  value={createForm.title}
+                  onChange={(event) =>
+                    setCreateForm((current) => ({
+                      ...current,
+                      title: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Autor</span>
+                <input
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  type="text"
+                  value={createForm.author}
+                  onChange={(event) =>
+                    setCreateForm((current) => ({
+                      ...current,
+                      author: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Aasta</span>
+                <input
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  min="0"
+                  type="number"
+                  value={String(createForm.publishedYear)}
+                  onChange={(event) =>
+                    setCreateForm((current) => ({
+                      ...current,
+                      publishedYear: Number(event.target.value),
+                    }))
+                  }
+                />
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Keel</span>
+                <input
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  type="text"
+                  value={createForm.language}
+                  onChange={(event) =>
+                    setCreateForm((current) => ({
+                      ...current,
+                      language: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label className="text-sm text-slate-700">
+                <span className="mb-1 block font-medium">Zanrid</span>
+                <input
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  placeholder="Sci-Fi, Adventure"
+                  type="text"
+                  value={createForm.genre}
+                  onChange={(event) =>
+                    setCreateForm((current) => ({
+                      ...current,
+                      genre: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                className="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                disabled={isSubmitting}
+                type="submit"
+              >
+                {isSubmitting ? "Salvestan..." : "Salvesta raamat"}
+              </button>
+
+              <button
+                className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                type="button"
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setCreateForm(emptyCreateForm);
+                  setActionError(null);
+                }}
+              >
+                Loobu
+              </button>
+            </div>
+          </form>
+        )}
+
+        {actionError && (
+          <p className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {actionError}
+          </p>
+        )}
+
+        {loading && (
+          <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            Laen raamatuid...
+          </p>
+        )}
+
+        {error && (
+          <p className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        {!loading && !error && books.length === 0 && (
+          <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            Uhtegi raamatut ei leitud.
+          </p>
+        )}
+
+        {!loading && !error && books.length > 0 && (
+          <>
+            <div className="mt-6 flex items-center justify-between gap-3 text-sm text-slate-600">
+              <p>
+                Kuvan {books.length} / {pagination?.totalItems ?? books.length}{" "}
+                raamatut.
+              </p>
+              <p>
+                Leht {pagination?.page ?? 1} / {Math.max(totalPages, 1)}
+              </p>
+            </div>
+
+            <section className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {books.map((book) => {
+                const genres = book.genre
+                  .split(",")
+                  .map((genre) => genre.trim())
+                  .filter(Boolean);
+
+                return (
+                  <article
+                    key={book.id}
+                    className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+                  >
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      {book.title}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-700">
+                      Autor: {book.author}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      Aasta: {book.publishedYear}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      Keel: {book.language}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {genres.map((genre) => (
+                        <span
+                          key={`${book.id}-${genre}`}
+                          className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+                        >
+                          {genre}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Link
+                        className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                        to={`/books/${book.id}`}
+                      >
+                        Vaata detaili
+                      </Link>
+
+                      <button
+                        className="inline-flex items-center rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={deletingId === book.id}
+                        type="button"
+                        onClick={() => {
+                          void handleDeleteBook(book.id);
+                        }}
+                      >
+                        {deletingId === book.id ? "Kustutan..." : "Kustuta"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+
+            <nav className="mt-6 flex flex-wrap items-center gap-2">
+              <button
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!pagination?.hasPreviousPage}
+                type="button"
+                onClick={() => updateQuery({ page: currentPage - 1 })}
+              >
+                Eelmine
+              </button>
+
+              {pageNumbers.map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                    pageNumber === currentPage
+                      ? "bg-slate-900 text-white"
+                      : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
+                  type="button"
+                  onClick={() => updateQuery({ page: pageNumber })}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+
+              <button
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!pagination?.hasNextPage}
+                type="button"
+                onClick={() => updateQuery({ page: currentPage + 1 })}
+              >
+                Jargmine
+              </button>
+            </nav>
+          </>
+        )}
+      </div>
     </main>
   );
 }
