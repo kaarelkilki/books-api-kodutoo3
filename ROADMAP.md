@@ -225,12 +225,12 @@ Kontroll:
 
 Kontroll:
 
-- [ ] Otselingid töötavad brauseri refreshi järel.
+- [x] Otselingid töötavad brauseri refreshi järel.
 
 ## 4.4 Vaade: Raamatute nimekiri `/books`
 
-- [ ] Loo fail `frontend/src/pages/BooksPage.tsx`.
-- [ ] Kuva raamatud kaartidena või tabelina (pealkiri, autor, aasta, žanrid).
+- [x] Loo fail `frontend/src/pages/BooksPage.tsx`.
+- [x] Kuva raamatud kaartidena või tabelina (pealkiri, autor, aasta, žanrid).
 - [ ] Lisa filtrid (vähemalt 3):
   - pealkiri
   - aasta
