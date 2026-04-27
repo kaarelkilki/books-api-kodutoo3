@@ -25,11 +25,18 @@ type BookWithAverageRating = Book & {
 type DbBookForResponse = {
   id: number;
   title: string;
+  isbn: string | null;
   publishedYear: number;
+  pageCount: number | null;
   language: string;
+  description: string | null;
+  coverImage: string | null;
   author: {
     firstName: string;
     lastName: string;
+  };
+  publisher: {
+    name: string;
   };
   genres: Array<{
     genre: {
@@ -82,9 +89,12 @@ async function resolveAuthorId(authorName: string): Promise<number> {
   return createdAuthor.id;
 }
 
-async function resolvePublisherId(): Promise<number> {
+async function resolvePublisherId(publisherName?: string): Promise<number> {
+  const normalizedPublisherName =
+    publisherName?.trim() || DEFAULT_PUBLISHER_NAME;
+
   const existingPublisher = await prisma.publisher.findFirst({
-    where: { name: DEFAULT_PUBLISHER_NAME },
+    where: { name: normalizedPublisherName },
     select: { id: true },
   });
 
@@ -94,7 +104,7 @@ async function resolvePublisherId(): Promise<number> {
 
   const createdPublisher = await prisma.publisher.create({
     data: {
-      name: DEFAULT_PUBLISHER_NAME,
+      name: normalizedPublisherName,
       country: DEFAULT_PUBLISHER_COUNTRY,
     },
     select: { id: true },
@@ -184,9 +194,14 @@ function mapBookForResponse(
   return {
     id: book.id,
     title: book.title,
+    isbn: book.isbn ?? undefined,
     publishedYear: book.publishedYear,
+    pageCount: book.pageCount ?? undefined,
     author: authorName.length > 0 ? authorName : "Unknown",
+    publisher: book.publisher.name,
     language: book.language,
+    description: book.description ?? undefined,
+    coverImage: book.coverImage ?? undefined,
     genre: genres.length > 0 ? genres.join(", ") : "Unknown",
     averageRating,
   };
@@ -275,6 +290,11 @@ export async function getBooks(
             lastName: true,
           },
         },
+        publisher: {
+          select: {
+            name: true,
+          },
+        },
         genres: {
           include: {
             genre: {
@@ -313,6 +333,11 @@ export async function getBookById(id: number): Promise<Book | null> {
           lastName: true,
         },
       },
+      publisher: {
+        select: {
+          name: true,
+        },
+      },
       genres: {
         include: {
           genre: {
@@ -342,7 +367,7 @@ export async function getBookById(id: number): Promise<Book | null> {
 export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
   const [authorId, publisherId] = await Promise.all([
     resolveAuthorId(newBook.author),
-    resolvePublisherId(),
+    resolvePublisherId(newBook.publisher),
   ]);
 
   let createdBook: { id: number };
@@ -350,8 +375,12 @@ export async function addBook(newBook: Omit<Book, "id">): Promise<Book> {
     createdBook = await prisma.book.create({
       data: {
         title: newBook.title,
+        isbn: newBook.isbn,
         publishedYear: newBook.publishedYear,
+        pageCount: newBook.pageCount,
         language: newBook.language,
+        description: newBook.description,
+        coverImage: newBook.coverImage,
         authorId,
         publisherId,
       },
@@ -397,28 +426,55 @@ export async function updateBook(
 
   const data: {
     title?: string;
+    isbn?: string;
     publishedYear?: number;
+    pageCount?: number;
     language?: string;
+    description?: string;
+    coverImage?: string;
     authorId?: number;
+    publisherId?: number;
   } = {};
 
   if (updatedBook.title !== undefined) {
     data.title = updatedBook.title;
   }
+  if (updatedBook.isbn !== undefined) {
+    data.isbn = updatedBook.isbn;
+  }
   if (updatedBook.publishedYear !== undefined) {
     data.publishedYear = updatedBook.publishedYear;
+  }
+  if (updatedBook.pageCount !== undefined) {
+    data.pageCount = updatedBook.pageCount;
   }
   if (updatedBook.language !== undefined) {
     data.language = updatedBook.language;
   }
+  if (updatedBook.description !== undefined) {
+    data.description = updatedBook.description;
+  }
+  if (updatedBook.coverImage !== undefined) {
+    data.coverImage = updatedBook.coverImage;
+  }
   if (updatedBook.author !== undefined) {
     data.authorId = await resolveAuthorId(updatedBook.author);
   }
+  if (updatedBook.publisher !== undefined) {
+    data.publisherId = await resolvePublisherId(updatedBook.publisher);
+  }
 
-  await prisma.book.update({
-    where: { id },
-    data,
-  });
+  try {
+    await prisma.book.update({
+      where: { id },
+      data,
+    });
+  } catch (error) {
+    if (isPrismaKnownError(error, "P2002")) {
+      throw makeHttpError("A book with this ISBN already exists", 409);
+    }
+    throw error;
+  }
 
   if (updatedBook.genre !== undefined) {
     await replaceBookGenres(id, parseGenreNames(updatedBook.genre));

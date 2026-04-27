@@ -253,25 +253,25 @@ Kontroll:
 
 ## 4.5 Vaade: Raamatu detail `/books/:id`
 
-- [ ] Loo fail `frontend/src/pages/BookDetailPage.tsx`.
-- [ ] Kuva kõik raamatu andmed:
+- [x] Loo fail `frontend/src/pages/BookDetailPage.tsx`.
+- [x] Kuva kõik raamatu andmed:
   - pealkiri, ISBN, aasta, lehekülgede arv, keel, kirjeldus
   - autor, kirjastus, žanrid
-- [ ] Küsi ja kuva keskmine hinnang endpointist:
+- [x] Küsi ja kuva keskmine hinnang endpointist:
   - `GET /books/:id/average-rating`
-- [ ] Lisa nupp "Muuda" (eeltäidetud muutmisvorm).
-- [ ] Lisa nupp "Kustuta" (järel suuna `/books`).
-- [ ] Küsi ja kuva arvustused:
+- [x] Lisa nupp "Muuda" (eeltäidetud muutmisvorm).
+- [x] Lisa nupp "Kustuta" (järel suuna `/books`).
+- [x] Küsi ja kuva arvustused:
   - `GET /books/:id/reviews`
-- [ ] Lisa arvustuse lisamise vorm:
+- [x] Lisa arvustuse lisamise vorm:
   - kasutajanimi
   - hinnang 1..5
   - kommentaar
-- [ ] Lisa nupp "Tagasi nimekirja".
+- [x] Lisa nupp "Tagasi nimekirja".
 
 Kontroll:
 
-- [ ] Detailvaade uuendab andmeid pärast muutmist/kustutamist/lisatud arvustust.
+- [x] Detailvaade uuendab andmeid pärast muutmist/kustutamist/lisatud arvustust.
 
 ## 4.6 Kohustuslik tehniline kvaliteet
 

@@ -5,7 +5,15 @@ import { Review } from "../models/review.model";
 const prisma = new PrismaClient();
 
 function isMockEnabled(): boolean {
-  return process.env.USE_MOCK === "true";
+  if (process.env.USE_MOCK === "true") {
+    return true;
+  }
+
+  if (process.env.USE_MOCK === "false") {
+    return false;
+  }
+
+  return !process.env.DATABASE_URL;
 }
 
 function mapDbReviewToReview(review: {

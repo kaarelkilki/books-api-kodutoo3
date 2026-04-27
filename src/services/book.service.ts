@@ -7,7 +7,15 @@ import {
 } from "../models/book.model";
 
 function isMockEnabled(): boolean {
-  return process.env.USE_MOCK === "true";
+  if (process.env.USE_MOCK === "true") {
+    return true;
+  }
+
+  if (process.env.USE_MOCK === "false") {
+    return false;
+  }
+
+  return !process.env.DATABASE_URL;
 }
 
 export function getDataSourceMode(): "mock" | "db" {

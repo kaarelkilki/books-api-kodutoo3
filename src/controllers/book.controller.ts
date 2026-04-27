@@ -53,9 +53,14 @@ function normalizeBookResponse(book: Book): BookResponse {
   return {
     id: book.id,
     title: book.title,
+    isbn: book.isbn,
     publishedYear: book.publishedYear,
+    pageCount: book.pageCount,
     author: book.author,
+    publisher: book.publisher,
     language: book.language,
+    description: book.description,
+    coverImage: book.coverImage,
     genre: book.genre,
     averageRating: bookWithAverage.averageRating ?? null,
   };
@@ -88,6 +93,7 @@ export async function getBooks(req: Request, res: Response): Promise<void> {
     const books = await bookService.getBooks(parsedQuery.data);
     res.json(normalizePaginatedBooksResponse(books));
   } catch (error) {
+    console.error("Error fetching books:", error);
     res.status(500).json({ error: "Error fetching books", details: [] });
   }
 }

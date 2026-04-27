@@ -21,9 +21,14 @@ export interface PaginationMeta {
 export interface Book {
   id: number;
   title: string;
+  isbn?: string;
   publishedYear: number;
+  pageCount?: number;
   author: string;
+  publisher?: string;
   language: string;
+  description?: string;
+  coverImage?: string;
   genre: string;
   averageRating: number | null;
 }
@@ -47,9 +52,14 @@ export interface PaginatedBooksResponse {
 
 export interface CreateBookPayload {
   title: string;
+  isbn?: string;
   publishedYear: number;
+  pageCount?: number;
   author: string;
+  publisher?: string;
   language: string;
+  description?: string;
+  coverImage?: string;
   genre: string;
 }
 
