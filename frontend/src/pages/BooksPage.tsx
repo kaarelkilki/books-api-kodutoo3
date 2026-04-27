@@ -9,8 +9,11 @@ function BooksPage() {
       </p>
 
       <div className="mt-6">
-        <Link className="text-blue-600 underline" to="/books/1">
-          Open sample book detail (/books/1)
+        <Link
+          className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          to="/books/1"
+        >
+          Vaata detaili
         </Link>
       </div>
     </main>

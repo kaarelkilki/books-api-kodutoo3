@@ -219,7 +219,7 @@ Kontroll:
   - `/books`
   - `/books/:id`
 - [x] Lisa fallback route (404 vaade või suunamine `/books`).
-- [ ] Lisa navigeerimisnupud:
+- [x] Lisa navigeerimisnupud:
   - detailist tagasi nimekirja
   - nimekirjast detaili
 
