@@ -275,16 +275,16 @@ Kontroll:
 
 ## 4.6 Kohustuslik tehniline kvaliteet
 
-- [ ] AbortController kõigis `useEffect` päringutes.
-- [ ] Igal päringul on `loading` olek.
-- [ ] Igal päringul on `error` olek kasutajasõbraliku sõnumiga.
-- [ ] Kinnitused enne kustutamist (vältimaks juhuslikku delete'i).
-- [ ] Väldi duplikaatpäringuid (nt debounce filtrile, kui vajalik).
+- [x] AbortController kõigis `useEffect` päringutes.
+- [x] Igal päringul on `loading` olek.
+- [x] Igal päringul on `error` olek kasutajasõbraliku sõnumiga.
+- [x] Kinnitused enne kustutamist (vältimaks juhuslikku delete'i).
+- [x] Väldi duplikaatpäringuid (nt debounce filtrile, kui vajalik).
 
 Kontroll:
 
-- [ ] Lehelt lahkumisel katkestatakse pooleliolev päring.
-- [ ] Konsoolis ei teki unmounted-state uuenduse hoiatusi.
+- [x] Lehelt lahkumisel katkestatakse pooleliolev päring.
+- [x] Konsoolis ei teki unmounted-state uuenduse hoiatusi.
 
 ## 4.7 UI/UX (Tailwind)
 

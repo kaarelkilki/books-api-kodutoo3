@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { createBook, deleteBook, getBooks, isApiError } from "../api";
 import type {
   Book,
@@ -114,7 +114,12 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return error.response?.data?.error ?? fallback;
 }
 
+function isAbortError(error: unknown): boolean {
+  return isApiError(error) && error.code === "ERR_CANCELED";
+}
+
 function BooksPage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [books, setBooks] = useState<Book[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
@@ -126,6 +131,7 @@ function BooksPage() {
     useState<CreateBookPayload>(emptyCreateForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const activeControllersRef = useRef<Set<AbortController>>(new Set());
 
   const query = useMemo(
     () => buildQueryFromSearchParams(searchParams),
@@ -141,7 +147,15 @@ function BooksPage() {
   const limitValue = String(query.limit ?? DEFAULT_LIMIT);
 
   useEffect(() => {
+    return () => {
+      activeControllersRef.current.forEach((controller) => controller.abort());
+      activeControllersRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
+    activeControllersRef.current.add(controller);
 
     async function loadBooks() {
       try {
@@ -155,8 +169,9 @@ function BooksPage() {
           return;
         }
 
-        setError(getErrorMessage(err, "Raamatute laadimine ebaonnestus."));
+        setError(getErrorMessage(err, "Raamatute laadimine ebaõnnestus."));
       } finally {
+        activeControllersRef.current.delete(controller);
         if (!controller.signal.aborted) {
           setLoading(false);
         }
@@ -180,7 +195,13 @@ function BooksPage() {
       nextQuery.page = 1;
     }
 
-    setSearchParams(buildSearchParams(nextQuery));
+    const nextSearchParams = buildSearchParams(nextQuery);
+
+    if (nextSearchParams.toString() === searchParams.toString()) {
+      return;
+    }
+
+    setSearchParams(nextSearchParams);
   }
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
@@ -211,6 +232,7 @@ function BooksPage() {
     event.preventDefault();
 
     const controller = new AbortController();
+    activeControllersRef.current.add(controller);
 
     try {
       setIsSubmitting(true);
@@ -219,11 +241,18 @@ function BooksPage() {
       setCreateForm(emptyCreateForm);
       setShowCreateForm(false);
       updateQuery({ page: 1 });
-      setSearchParams(buildSearchParams({ ...query, page: 1 }));
     } catch (err) {
-      setActionError(getErrorMessage(err, "Raamatu lisamine ebaonnestus."));
+      if (isAbortError(err)) {
+        return;
+      }
+
+      setActionError(getErrorMessage(err, "Raamatu lisamine ebaõnnestus."));
     } finally {
-      setIsSubmitting(false);
+      activeControllersRef.current.delete(controller);
+
+      if (!controller.signal.aborted) {
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -237,6 +266,7 @@ function BooksPage() {
     }
 
     const controller = new AbortController();
+    activeControllersRef.current.add(controller);
 
     try {
       setDeletingId(id);
@@ -248,9 +278,17 @@ function BooksPage() {
 
       updateQuery({ page: nextPage });
     } catch (err) {
-      setActionError(getErrorMessage(err, "Raamatu kustutamine ebaonnestus."));
+      if (isAbortError(err)) {
+        return;
+      }
+
+      setActionError(getErrorMessage(err, "Raamatu kustutamine ebaõnnestus."));
     } finally {
-      setDeletingId(null);
+      activeControllersRef.current.delete(controller);
+
+      if (!controller.signal.aborted) {
+        setDeletingId(null);
+      }
     }
   }
 
@@ -260,6 +298,7 @@ function BooksPage() {
     { length: totalPages },
     (_, index) => index + 1,
   );
+  const returnTo = `${location.pathname}${location.search}`;
 
   return (
     <main className="min-h-screen bg-slate-50 p-6">
@@ -365,6 +404,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Sorteeri järgi</span>
                 <select
+                  name="sortBy"
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   value={sortBy}
                   onChange={(event) =>
@@ -379,6 +419,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Jarjekord</span>
                 <select
+                  name="order"
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   value={order}
                   onChange={(event) =>
@@ -393,6 +434,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Lehel kuvatakse</span>
                 <select
+                  name="limit"
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   value={limitValue}
                   onChange={(event) => {
@@ -421,6 +463,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Pealkiri</span>
                 <input
+                  name="title"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   type="text"
@@ -437,6 +480,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Autor</span>
                 <input
+                  name="author"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   type="text"
@@ -453,6 +497,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Aasta</span>
                 <input
+                  name="publishedYear"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   min="0"
@@ -470,6 +515,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Keel</span>
                 <input
+                  name="language"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   type="text"
@@ -486,6 +532,7 @@ function BooksPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Zanrid</span>
                 <input
+                  name="genre"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                   placeholder="Sci-Fi, Adventure"
@@ -600,6 +647,7 @@ function BooksPage() {
                     <div className="mt-4 flex flex-wrap gap-3">
                       <Link
                         className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                        state={{ from: returnTo }}
                         to={`/books/${book.id}`}
                       >
                         Vaata detaili

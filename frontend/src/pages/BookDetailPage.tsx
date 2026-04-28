@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   createBookReview,
   deleteBook,
@@ -28,6 +28,10 @@ type BookEditFormState = {
   genre: string;
   description: string;
   coverImage: string;
+};
+
+type BookDetailLocationState = {
+  from?: string;
 };
 
 const emptyReviewForm: CreateReviewPayload = {
@@ -59,6 +63,10 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return error.response?.data?.error ?? fallback;
 }
 
+function isAbortError(error: unknown): boolean {
+  return isApiError(error) && error.code === "ERR_CANCELED";
+}
+
 function formatAverageRating(value: number | null): string {
   if (value === null) {
     return "Hinnang puudub";
@@ -68,6 +76,7 @@ function formatAverageRating(value: number | null): string {
 }
 
 function BookDetailPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [book, setBook] = useState<Book | null>(null);
@@ -83,8 +92,18 @@ function BookDetailPage() {
   const [reviewForm, setReviewForm] =
     useState<CreateReviewPayload>(emptyReviewForm);
   const [editForm, setEditForm] = useState<BookEditFormState | null>(null);
+  const activeControllersRef = useRef<Set<AbortController>>(new Set());
 
   const bookId = id ? Number(id) : Number.NaN;
+  const backTo =
+    (location.state as BookDetailLocationState | null)?.from ?? "/books";
+
+  useEffect(() => {
+    return () => {
+      activeControllersRef.current.forEach((controller) => controller.abort());
+      activeControllersRef.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     if (!Number.isInteger(bookId) || bookId < 1) {
@@ -94,6 +113,7 @@ function BookDetailPage() {
     }
 
     const controller = new AbortController();
+    activeControllersRef.current.add(controller);
 
     async function loadBookDetail() {
       try {
@@ -118,9 +138,10 @@ function BookDetailPage() {
         }
 
         setError(
-          getErrorMessage(err, "Raamatu detailide laadimine ebaonnestus."),
+          getErrorMessage(err, "Raamatu detailide laadimine ebaõnnestus."),
         );
       } finally {
+        activeControllersRef.current.delete(controller);
         if (!controller.signal.aborted) {
           setLoading(false);
         }
@@ -134,17 +155,15 @@ function BookDetailPage() {
     };
   }, [bookId]);
 
-  async function refreshBookData() {
+  async function refreshBookData(signal?: AbortSignal) {
     if (!Number.isInteger(bookId) || bookId < 1) {
       return;
     }
 
-    const controller = new AbortController();
-
     const [bookResponse, ratingResponse, reviewsResponse] = await Promise.all([
-      getBookById(bookId, controller.signal),
-      getBookAverageRating(bookId, controller.signal),
-      getBookReviews(bookId, undefined, controller.signal),
+      getBookById(bookId, signal),
+      getBookAverageRating(bookId, signal),
+      getBookReviews(bookId, undefined, signal),
     ]);
 
     setBook(bookResponse);
@@ -175,18 +194,29 @@ function BookDetailPage() {
       coverImage: editForm.coverImage.trim() || undefined,
     };
 
+    const controller = new AbortController();
+    activeControllersRef.current.add(controller);
+
     try {
       setIsSaving(true);
       setActionError(null);
-      const updatedBook = await updateBook(bookId, payload);
+      const updatedBook = await updateBook(bookId, payload, controller.signal);
       setBook(updatedBook);
       setEditForm(buildEditFormState(updatedBook));
       setIsEditOpen(false);
-      await refreshBookData();
+      await refreshBookData(controller.signal);
     } catch (err) {
-      setActionError(getErrorMessage(err, "Raamatu uuendamine ebaonnestus."));
+      if (isAbortError(err)) {
+        return;
+      }
+
+      setActionError(getErrorMessage(err, "Raamatu uuendamine ebaõnnestus."));
     } finally {
-      setIsSaving(false);
+      activeControllersRef.current.delete(controller);
+
+      if (!controller.signal.aborted) {
+        setIsSaving(false);
+      }
     }
   }
 
@@ -203,14 +233,26 @@ function BookDetailPage() {
       return;
     }
 
+    const controller = new AbortController();
+    activeControllersRef.current.add(controller);
+
     try {
       setIsDeleting(true);
       setActionError(null);
-      await deleteBook(bookId);
-      navigate("/books");
+      await deleteBook(bookId, controller.signal);
+      navigate(backTo);
     } catch (err) {
-      setActionError(getErrorMessage(err, "Raamatu kustutamine ebaonnestus."));
-      setIsDeleting(false);
+      if (isAbortError(err)) {
+        return;
+      }
+
+      setActionError(getErrorMessage(err, "Raamatu kustutamine ebaõnnestus."));
+    } finally {
+      activeControllersRef.current.delete(controller);
+
+      if (!controller.signal.aborted) {
+        setIsDeleting(false);
+      }
     }
   }
 
@@ -221,20 +263,35 @@ function BookDetailPage() {
       return;
     }
 
+    const controller = new AbortController();
+    activeControllersRef.current.add(controller);
+
     try {
       setIsSubmittingReview(true);
       setActionError(null);
-      await createBookReview(bookId, {
-        reviewerName: reviewForm.reviewerName.trim(),
-        rating: Number(reviewForm.rating),
-        comment: reviewForm.comment?.trim() || undefined,
-      });
+      await createBookReview(
+        bookId,
+        {
+          reviewerName: reviewForm.reviewerName.trim(),
+          rating: Number(reviewForm.rating),
+          comment: reviewForm.comment?.trim() || undefined,
+        },
+        controller.signal,
+      );
       setReviewForm(emptyReviewForm);
-      await refreshBookData();
+      await refreshBookData(controller.signal);
     } catch (err) {
-      setActionError(getErrorMessage(err, "Arvustuse lisamine ebaonnestus."));
+      if (isAbortError(err)) {
+        return;
+      }
+
+      setActionError(getErrorMessage(err, "Arvustuse lisamine ebaõnnestus."));
     } finally {
-      setIsSubmittingReview(false);
+      activeControllersRef.current.delete(controller);
+
+      if (!controller.signal.aborted) {
+        setIsSubmittingReview(false);
+      }
     }
   }
 
@@ -260,7 +317,7 @@ function BookDetailPage() {
           </p>
           <Link
             className="mt-6 inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-            to="/books"
+            to={backTo}
           >
             Tagasi nimekirja
           </Link>
@@ -275,7 +332,7 @@ function BookDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-            to="/books"
+            to={backTo}
           >
             Tagasi nimekirja
           </Link>
@@ -427,6 +484,7 @@ function BookDetailPage() {
                 <label className="block text-sm text-slate-700">
                   <span className="mb-1 block font-medium">Kasutajanimi</span>
                   <input
+                    name="reviewerName"
                     required
                     className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                     type="text"
@@ -443,6 +501,7 @@ function BookDetailPage() {
                 <label className="block text-sm text-slate-700">
                   <span className="mb-1 block font-medium">Hinnang</span>
                   <select
+                    name="rating"
                     className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                     value={String(reviewForm.rating)}
                     onChange={(event) =>
@@ -463,6 +522,7 @@ function BookDetailPage() {
                 <label className="block text-sm text-slate-700">
                   <span className="mb-1 block font-medium">Kommentaar</span>
                   <textarea
+                    name="comment"
                     className="min-h-28 w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
                     value={reviewForm.comment ?? ""}
                     onChange={(event) =>
@@ -498,6 +558,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Pealkiri</span>
                 <input
+                  name="title"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
@@ -514,6 +575,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">ISBN</span>
                 <input
+                  name="isbn"
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
                   value={editForm.isbn}
@@ -529,6 +591,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Aasta</span>
                 <input
+                  name="publishedYear"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   min="0"
@@ -546,6 +609,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Lehekulgi</span>
                 <input
+                  name="pageCount"
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   min="1"
                   type="number"
@@ -562,6 +626,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Autor</span>
                 <input
+                  name="author"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
@@ -578,6 +643,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Kirjastus</span>
                 <input
+                  name="publisher"
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
                   value={editForm.publisher}
@@ -593,6 +659,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Keel</span>
                 <input
+                  name="language"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
@@ -609,6 +676,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700">
                 <span className="mb-1 block font-medium">Zanrid</span>
                 <input
+                  name="genre"
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="text"
@@ -625,6 +693,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700 xl:col-span-3">
                 <span className="mb-1 block font-medium">Kaane pildi URL</span>
                 <input
+                  name="coverImage"
                   className="w-full rounded-md border border-slate-300 px-3 py-2"
                   type="url"
                   value={editForm.coverImage}
@@ -640,6 +709,7 @@ function BookDetailPage() {
               <label className="text-sm text-slate-700 xl:col-span-3">
                 <span className="mb-1 block font-medium">Kirjeldus</span>
                 <textarea
+                  name="description"
                   className="min-h-32 w-full rounded-md border border-slate-300 px-3 py-2"
                   value={editForm.description}
                   onChange={(event) =>
