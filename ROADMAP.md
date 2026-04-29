@@ -288,19 +288,19 @@ Kontroll:
 
 ## 4.7 UI/UX (Tailwind)
 
-- [ ] Rakenda ühtne disainisüsteem:
+- [x] Rakenda ühtne disainisüsteem:
   - spacing, värvid, tüpograafia
   - nupud, inputid, kaardid
-- [ ] Tee vaated kasutatavaks nii desktopis kui mobiilis.
-- [ ] Lisa selge visualiseerimine:
+- [x] Tee vaated kasutatavaks nii desktopis kui mobiilis.
+- [x] Lisa selge visualiseerimine:
   - loading spinner/skeleton
   - error alert
   - empty state
 
 Kontroll:
 
-- [ ] Bootstrapi ei kasutata.
-- [ ] Tailwind klassid on järjepidevad ja loetavad.
+- [x] Bootstrapi ei kasutata.
+- [x] Tailwind klassid on järjepidevad ja loetavad.
 
 ## 4.8 Dokumentatsioon ja esitamine (frontend)
 

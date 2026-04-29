@@ -10,6 +10,12 @@ import {
   isApiError,
   updateBook,
 } from "../api";
+import {
+  DetailSkeleton,
+  EmptyState,
+  MessageAlert,
+  SpinnerBlock,
+} from "../components/UiStates";
 import type {
   Book,
   CreateReviewPayload,
@@ -297,9 +303,12 @@ function BookDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <p className="text-sm text-slate-500">Laen raamatu detailvaadet...</p>
+      <main className="app-shell">
+        <div className="page-wrap max-w-6xl">
+          <SpinnerBlock label="Laen raamatu detailvaadet..." />
+          <div className="mt-6">
+            <DetailSkeleton />
+          </div>
         </div>
       </main>
     );
@@ -307,18 +316,14 @@ function BookDetailPage() {
 
   if (error || !book) {
     return (
-      <main className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-semibold text-slate-900">
-            Raamatut ei leitud
-          </h1>
-          <p className="mt-3 text-sm text-red-700">
-            {error ?? "Sellist raamatut ei ole olemas."}
-          </p>
-          <Link
-            className="mt-6 inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-            to={backTo}
-          >
+      <main className="app-shell">
+        <div className="page-wrap max-w-4xl">
+          <MessageAlert
+            tone="error"
+            title="Raamatut ei leitud"
+            message={error ?? "Sellist raamatut ei ole olemas."}
+          />
+          <Link className="btn-primary mt-6" to={backTo}>
             Tagasi nimekirja
           </Link>
         </div>
@@ -327,19 +332,16 @@ function BookDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-6xl">
+    <main className="app-shell">
+      <div className="page-wrap max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link
-            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-            to={backTo}
-          >
+          <Link className="btn-secondary" to={backTo}>
             Tagasi nimekirja
           </Link>
 
           <div className="flex flex-wrap gap-3">
             <button
-              className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="btn-secondary"
               type="button"
               onClick={() => setIsEditOpen((current) => !current)}
             >
@@ -347,7 +349,7 @@ function BookDetailPage() {
             </button>
 
             <button
-              className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
+              className="btn-danger"
               disabled={isDeleting}
               type="button"
               onClick={() => {
@@ -360,13 +362,17 @@ function BookDetailPage() {
         </div>
 
         {actionError && (
-          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {actionError}
-          </p>
+          <div className="mt-6">
+            <MessageAlert
+              tone="error"
+              title="Toiming ebaonnestus"
+              message={actionError}
+            />
+          </div>
         )}
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <article className="panel overflow-hidden">
             <div className="grid gap-0 md:grid-cols-[0.8fr_1.2fr]">
               <div className="min-h-[320px] bg-gradient-to-br from-cyan-500 via-sky-600 to-slate-900 p-6 text-white">
                 <p className="text-xs uppercase tracking-[0.25em] text-cyan-100">
@@ -463,7 +469,7 @@ function BookDetailPage() {
           </article>
 
           <aside className="space-y-6">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="panel p-6">
               <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                 Keskmine hinnang
               </p>
@@ -475,18 +481,18 @@ function BookDetailPage() {
               </p>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="panel p-6">
               <h2 className="text-xl font-semibold text-slate-900">
                 Lisa arvustus
               </h2>
 
               <form className="mt-4 space-y-4" onSubmit={handleCreateReview}>
-                <label className="block text-sm text-slate-700">
-                  <span className="mb-1 block font-medium">Kasutajanimi</span>
+                <label className="field-label block">
+                  <span className="field-caption">Kasutajanimi</span>
                   <input
                     name="reviewerName"
                     required
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                    className="input-base"
                     type="text"
                     value={reviewForm.reviewerName}
                     onChange={(event) =>
@@ -498,11 +504,11 @@ function BookDetailPage() {
                   />
                 </label>
 
-                <label className="block text-sm text-slate-700">
-                  <span className="mb-1 block font-medium">Hinnang</span>
+                <label className="field-label block">
+                  <span className="field-caption">Hinnang</span>
                   <select
                     name="rating"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                    className="input-base"
                     value={String(reviewForm.rating)}
                     onChange={(event) =>
                       setReviewForm((current) => ({
@@ -519,11 +525,11 @@ function BookDetailPage() {
                   </select>
                 </label>
 
-                <label className="block text-sm text-slate-700">
-                  <span className="mb-1 block font-medium">Kommentaar</span>
+                <label className="field-label block">
+                  <span className="field-caption">Kommentaar</span>
                   <textarea
                     name="comment"
-                    className="min-h-28 w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                    className="input-base min-h-28"
                     value={reviewForm.comment ?? ""}
                     onChange={(event) =>
                       setReviewForm((current) => ({
@@ -535,7 +541,7 @@ function BookDetailPage() {
                 </label>
 
                 <button
-                  className="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                  className="btn-accent"
                   disabled={isSubmittingReview}
                   type="submit"
                 >
@@ -547,7 +553,7 @@ function BookDetailPage() {
         </section>
 
         {isEditOpen && editForm && (
-          <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="panel mt-6 p-6">
             <h2 className="text-xl font-semibold text-slate-900">
               Muuda raamatu andmeid
             </h2>
@@ -555,12 +561,12 @@ function BookDetailPage() {
               className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
               onSubmit={handleUpdateBook}
             >
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Pealkiri</span>
+              <label className="field-label">
+                <span className="field-caption">Pealkiri</span>
                 <input
                   name="title"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.title}
                   onChange={(event) =>
@@ -572,11 +578,11 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">ISBN</span>
+              <label className="field-label">
+                <span className="field-caption">ISBN</span>
                 <input
                   name="isbn"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.isbn}
                   onChange={(event) =>
@@ -588,12 +594,12 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Aasta</span>
+              <label className="field-label">
+                <span className="field-caption">Aasta</span>
                 <input
                   name="publishedYear"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   min="0"
                   type="number"
                   value={editForm.publishedYear}
@@ -606,11 +612,11 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Lehekulgi</span>
+              <label className="field-label">
+                <span className="field-caption">Lehekulgi</span>
                 <input
                   name="pageCount"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   min="1"
                   type="number"
                   value={editForm.pageCount}
@@ -623,12 +629,12 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Autor</span>
+              <label className="field-label">
+                <span className="field-caption">Autor</span>
                 <input
                   name="author"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.author}
                   onChange={(event) =>
@@ -640,11 +646,11 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Kirjastus</span>
+              <label className="field-label">
+                <span className="field-caption">Kirjastus</span>
                 <input
                   name="publisher"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.publisher}
                   onChange={(event) =>
@@ -656,12 +662,12 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Keel</span>
+              <label className="field-label">
+                <span className="field-caption">Keel</span>
                 <input
                   name="language"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.language}
                   onChange={(event) =>
@@ -673,12 +679,12 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Zanrid</span>
+              <label className="field-label">
+                <span className="field-caption">Zanrid</span>
                 <input
                   name="genre"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="text"
                   value={editForm.genre}
                   onChange={(event) =>
@@ -690,11 +696,11 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700 xl:col-span-3">
-                <span className="mb-1 block font-medium">Kaane pildi URL</span>
+              <label className="field-label xl:col-span-3">
+                <span className="field-caption">Kaane pildi URL</span>
                 <input
                   name="coverImage"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base"
                   type="url"
                   value={editForm.coverImage}
                   onChange={(event) =>
@@ -706,11 +712,11 @@ function BookDetailPage() {
                   }
                 />
               </label>
-              <label className="text-sm text-slate-700 xl:col-span-3">
-                <span className="mb-1 block font-medium">Kirjeldus</span>
+              <label className="field-label xl:col-span-3">
+                <span className="field-caption">Kirjeldus</span>
                 <textarea
                   name="description"
-                  className="min-h-32 w-full rounded-md border border-slate-300 px-3 py-2"
+                  className="input-base min-h-32"
                   value={editForm.description}
                   onChange={(event) =>
                     setEditForm((current) =>
@@ -724,14 +730,14 @@ function BookDetailPage() {
 
               <div className="flex flex-wrap gap-3 xl:col-span-3">
                 <button
-                  className="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="btn-primary"
                   disabled={isSaving}
                   type="submit"
                 >
                   {isSaving ? "Salvestan..." : "Salvesta muudatused"}
                 </button>
                 <button
-                  className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  className="btn-secondary"
                   type="button"
                   onClick={() => {
                     setIsEditOpen(false);
@@ -745,7 +751,7 @@ function BookDetailPage() {
           </section>
         )}
 
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="panel mt-6 p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-slate-900">Arvustused</h2>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
@@ -754,9 +760,10 @@ function BookDetailPage() {
           </div>
 
           {reviews.length === 0 ? (
-            <p className="mt-4 text-sm text-slate-500">
-              Sellel raamatul pole veel arvustusi.
-            </p>
+            <EmptyState
+              title="Arvustused puuduvad"
+              message="Ole esimene, kes sellele raamatule hinnangu ja kommentaari lisab."
+            />
           ) : (
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {reviews.map((review) => (

@@ -2,6 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { createBook, deleteBook, getBooks, isApiError } from "../api";
+import {
+  BooksSkeleton,
+  EmptyState,
+  MessageAlert,
+  SpinnerBlock,
+} from "../components/UiStates";
 import type {
   Book,
   BookListQuery,
@@ -301,9 +307,9 @@ function BooksPage() {
   const returnTo = `${location.pathname}${location.search}`;
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-end md:justify-between">
+    <main className="app-shell">
+      <div className="page-wrap">
+        <div className="panel-hero flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">
               Books catalog
@@ -318,7 +324,7 @@ function BooksPage() {
           </div>
 
           <button
-            className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            className="btn-primary"
             type="button"
             onClick={() => {
               setShowCreateForm((current) => !current);
@@ -330,14 +336,11 @@ function BooksPage() {
         </div>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <form
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-            onSubmit={handleFilterSubmit}
-          >
+          <form className="panel p-6" onSubmit={handleFilterSubmit}>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-slate-900">Filtrid</h2>
               <button
-                className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   setSearchParams(
@@ -350,10 +353,10 @@ function BooksPage() {
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Pealkiri</span>
+              <label className="field-label">
+                <span className="field-caption">Pealkiri</span>
                 <input
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   defaultValue={titleFilter}
                   name="title"
                   placeholder="Nt Dune"
@@ -361,10 +364,10 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Aasta</span>
+              <label className="field-label">
+                <span className="field-caption">Aasta</span>
                 <input
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   defaultValue={yearFilter}
                   min="0"
                   name="year"
@@ -373,10 +376,10 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Keel</span>
+              <label className="field-label">
+                <span className="field-caption">Keel</span>
                 <input
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   defaultValue={languageFilter}
                   name="language"
                   placeholder="Nt English"
@@ -386,26 +389,23 @@ function BooksPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-                type="submit"
-              >
+              <button className="btn-primary" type="submit">
                 Rakenda filtrid
               </button>
             </div>
           </form>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="panel p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Sorteeri ja kuva
             </h2>
 
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Sorteeri järgi</span>
+              <label className="field-label">
+                <span className="field-caption">Sorteeri jargi</span>
                 <select
                   name="sortBy"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   value={sortBy}
                   onChange={(event) =>
                     handleSortChange(event.target.value as BookSortField, order)
@@ -416,11 +416,11 @@ function BooksPage() {
                 </select>
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Jarjekord</span>
+              <label className="field-label">
+                <span className="field-caption">Jarjekord</span>
                 <select
                   name="order"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   value={order}
                   onChange={(event) =>
                     handleSortChange(sortBy, event.target.value as SortOrder)
@@ -431,11 +431,11 @@ function BooksPage() {
                 </select>
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Lehel kuvatakse</span>
+              <label className="field-label">
+                <span className="field-caption">Lehel kuvatakse</span>
                 <select
                   name="limit"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   value={limitValue}
                   onChange={(event) => {
                     updateQuery({ limit: Number(event.target.value), page: 1 });
@@ -451,21 +451,18 @@ function BooksPage() {
         </section>
 
         {showCreateForm && (
-          <form
-            className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-            onSubmit={handleCreateBook}
-          >
+          <form className="panel mt-6 p-6" onSubmit={handleCreateBook}>
             <h2 className="text-lg font-semibold text-slate-900">
               Lisa uus raamat
             </h2>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Pealkiri</span>
+              <label className="field-label">
+                <span className="field-caption">Pealkiri</span>
                 <input
                   name="title"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   type="text"
                   value={createForm.title}
                   onChange={(event) =>
@@ -477,12 +474,12 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Autor</span>
+              <label className="field-label">
+                <span className="field-caption">Autor</span>
                 <input
                   name="author"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   type="text"
                   value={createForm.author}
                   onChange={(event) =>
@@ -494,12 +491,12 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Aasta</span>
+              <label className="field-label">
+                <span className="field-caption">Aasta</span>
                 <input
                   name="publishedYear"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   min="0"
                   type="number"
                   value={String(createForm.publishedYear)}
@@ -512,12 +509,12 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Keel</span>
+              <label className="field-label">
+                <span className="field-caption">Keel</span>
                 <input
                   name="language"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   type="text"
                   value={createForm.language}
                   onChange={(event) =>
@@ -529,12 +526,12 @@ function BooksPage() {
                 />
               </label>
 
-              <label className="text-sm text-slate-700">
-                <span className="mb-1 block font-medium">Zanrid</span>
+              <label className="field-label">
+                <span className="field-caption">Zanrid</span>
                 <input
                   name="genre"
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900"
+                  className="input-base"
                   placeholder="Sci-Fi, Adventure"
                   type="text"
                   value={createForm.genre}
@@ -550,7 +547,7 @@ function BooksPage() {
 
             <div className="mt-4 flex flex-wrap gap-3">
               <button
-                className="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                className="btn-accent"
                 disabled={isSubmitting}
                 type="submit"
               >
@@ -558,7 +555,7 @@ function BooksPage() {
               </button>
 
               <button
-                className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                className="btn-secondary"
                 type="button"
                 onClick={() => {
                   setShowCreateForm(false);
@@ -573,27 +570,39 @@ function BooksPage() {
         )}
 
         {actionError && (
-          <p className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {actionError}
-          </p>
+          <div className="mt-6">
+            <MessageAlert
+              tone="error"
+              title="Toiming ebaonnestus"
+              message={actionError}
+            />
+          </div>
         )}
 
         {loading && (
-          <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            Laen raamatuid...
-          </p>
+          <>
+            <div className="mt-6">
+              <SpinnerBlock label="Laen raamatuid..." />
+            </div>
+            <BooksSkeleton />
+          </>
         )}
 
-        {error && (
-          <p className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </p>
+        {error && !loading && (
+          <div className="mt-6">
+            <MessageAlert
+              tone="error"
+              title="Andmete laadimine katkestus"
+              message={error}
+            />
+          </div>
         )}
 
         {!loading && !error && books.length === 0 && (
-          <p className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            Uhtegi raamatut ei leitud.
-          </p>
+          <EmptyState
+            title="Uhtegi raamatut ei leitud"
+            message="Proovi filtreid muuta voi lisa uus raamat, et nimekiri taas taita."
+          />
         )}
 
         {!loading && !error && books.length > 0 && (
@@ -616,10 +625,7 @@ function BooksPage() {
                   .filter(Boolean);
 
                 return (
-                  <article
-                    key={book.id}
-                    className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-                  >
+                  <article key={book.id} className="panel p-4">
                     <h2 className="text-lg font-semibold text-slate-900">
                       {book.title}
                     </h2>
@@ -635,10 +641,7 @@ function BooksPage() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       {genres.map((genre) => (
-                        <span
-                          key={`${book.id}-${genre}`}
-                          className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
-                        >
+                        <span key={`${book.id}-${genre}`} className="chip">
                           {genre}
                         </span>
                       ))}
@@ -646,7 +649,7 @@ function BooksPage() {
 
                     <div className="mt-4 flex flex-wrap gap-3">
                       <Link
-                        className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                        className="btn-primary"
                         state={{ from: returnTo }}
                         to={`/books/${book.id}`}
                       >
@@ -654,7 +657,7 @@ function BooksPage() {
                       </Link>
 
                       <button
-                        className="inline-flex items-center rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="btn-secondary border-red-200 text-red-700 hover:bg-red-50"
                         disabled={deletingId === book.id}
                         type="button"
                         onClick={() => {
@@ -671,7 +674,7 @@ function BooksPage() {
 
             <nav className="mt-6 flex flex-wrap items-center gap-2">
               <button
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-secondary px-3"
                 disabled={!pagination?.hasPreviousPage}
                 type="button"
                 onClick={() => updateQuery({ page: currentPage - 1 })}
@@ -685,7 +688,7 @@ function BooksPage() {
                   className={`rounded-md px-3 py-2 text-sm font-medium transition ${
                     pageNumber === currentPage
                       ? "bg-slate-900 text-white"
-                      : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                   type="button"
                   onClick={() => updateQuery({ page: pageNumber })}
@@ -695,7 +698,7 @@ function BooksPage() {
               ))}
 
               <button
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-secondary px-3"
                 disabled={!pagination?.hasNextPage}
                 type="button"
                 onClick={() => updateQuery({ page: currentPage + 1 })}

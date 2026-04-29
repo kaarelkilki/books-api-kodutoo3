@@ -62,3 +62,103 @@
     background: rgba(14, 165, 233, 0.2);
   }
 }
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen p-4 sm:p-6;
+    background-image:
+      radial-gradient(
+        circle at 12% 8%,
+        rgba(249, 115, 22, 0.15),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 88% 12%,
+        rgba(14, 165, 233, 0.17),
+        transparent 30%
+      ),
+      linear-gradient(180deg, #f8fafc 0%, #eef4f8 55%, #f8fafc 100%);
+  }
+
+  .page-wrap {
+    @apply mx-auto max-w-7xl;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .panel-hero {
+    @apply panel p-6 md:p-8;
+    background-image: linear-gradient(
+      128deg,
+      #ffffff 0%,
+      #f8fafc 65%,
+      #eef6ff 100%
+    );
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-slate-900 text-white hover:bg-slate-700;
+  }
+
+  .btn-secondary {
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-100;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .btn-accent {
+    @apply btn bg-emerald-600 text-white hover:bg-emerald-700;
+  }
+
+  .btn-link {
+    @apply text-sm font-medium text-slate-500 transition hover:text-slate-900;
+  }
+
+  .field-label {
+    @apply text-sm text-slate-700;
+  }
+
+  .field-caption {
+    @apply mb-1 block font-medium;
+  }
+
+  .input-base {
+    @apply w-full rounded-md border border-slate-300 px-3 py-2 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-cyan-100;
+  }
+
+  .chip {
+    @apply rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700;
+  }
+
+  .alert {
+    @apply rounded-xl border p-4;
+  }
+
+  .alert-error {
+    @apply border-red-200 bg-red-50 text-red-800;
+  }
+
+  .alert-info {
+    @apply border-cyan-200 bg-cyan-50 text-cyan-900;
+  }
+
+  .empty-state {
+    @apply panel mt-6 p-8 text-center;
+  }
+
+  .spinner {
+    @apply inline-block h-5 w-5 animate-spin rounded-full border-2 border-cyan-200 border-t-cyan-700;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-slate-200/80;
+  }
+}
