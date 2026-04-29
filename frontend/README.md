@@ -1,73 +1,100 @@
-# React + TypeScript + Vite
+# Books Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite frontend, mis kasutab Books API backendi.
 
-Currently, two official plugins are available:
+## Autor ja ülesannete jaotus
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Autor: Kaarel Kilki
+- Meeskonna suurus: 1
+- Ülesannete jaotus: kogu frontendi arendus (list/detail vaated, CRUD tegevused, filtreerimine, sorteerimine, pagination, error/loading olekud, Tailwind UI/UX).
 
-## React Compiler
+## Seos backendiga
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Frontend repo/kaust: books-api/frontend
+- Backend API repo: https://github.com/kaarelkilki/books-api-kodutoo3
+- Frontend kasutab API baas-URLi muutujast VITE_API_URL
 
-## Expanding the ESLint configuration
+## Nõuded enne käivitamist
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Node.js 20+ (soovituslik)
+2. Tootav backend API aadressil http://localhost:3000
+3. Frontendi ENV fail loodud vastavalt näidisele
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Installatsioon
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Käivita juurkaustast:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Keskkonnamuutujad
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Fail [frontend/.env.example](frontend/.env.example) sisaldab vajalikku näidist.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Loo [frontend/.env](frontend/.env) ja lisa sinna:
+
+```env
+VITE_API_URL=http://localhost:3000/api/v1
 ```
+
+## Käivitamise käsud
+
+Arendusserver:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Tootmisbuild:
+
+```bash
+cd frontend
+npm run build
+```
+
+Buildi eelvaade lokaalselt:
+
+```bash
+cd frontend
+npm run preview
+```
+
+## Vaated
+
+- /books
+  - raamatute nimekiri
+  - filtrid: pealkiri, aasta, keel
+  - sorteerimine: pealkiri/aasta, kasvav/kahanev
+  - pagination
+  - lisa/kustuta tegevused
+- /books/:id
+  - detailvaade
+  - raamatu muutmine ja kustutamine
+  - arvustuste list
+  - arvustuse lisamine
+
+## Projekti struktuur (frontend)
+
+Peamine rakenduskood asub kaustas [frontend/src](frontend/src):
+
+- [frontend/src/pages](frontend/src/pages)
+- [frontend/src/components](frontend/src/components)
+- [frontend/src/hooks](frontend/src/hooks)
+- [frontend/src/api.ts](frontend/src/api.ts)
+
+Konfiguratsioonifailid:
+
+- [frontend/.env.example](frontend/.env.example)
+- [frontend/.gitignore](frontend/.gitignore)
+- [frontend/tailwind.config.js](frontend/tailwind.config.js)
+
+## Kiirkontroll hindajale
+
+1. Kaivita backend (port 3000)
+2. Kaivita frontend (port 5173 vaikimisi)
+3. Ava brauseris /books
+4. Testi filtreid, sorteerimist, paginationit
+5. Ava detailvaade ja lisa arvustus

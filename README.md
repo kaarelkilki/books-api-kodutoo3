@@ -386,3 +386,81 @@ curl -X POST "http://localhost:3000/api/v1/books/1/reviews" \
 - `npm run build`
 - `npm start`
 - `npm run smoke`
+
+## Frontend (React + TypeScript + Vite)
+
+Frontend rakendus asub kaustas [frontend](frontend) ja kasutab olemasolevat backend API-t.
+
+### Autor ja ülesannete jaotus (frontend)
+
+- Autor: Kaarel Kilki
+- Meeskonna suurus: 1
+- Ülesannete jaotus: kogu frontendi arendus (list/detail vaated, CRUD tegevused, filtreerimine, sorteerimine, pagination, error/loading olekud, Tailwind UI/UX)
+
+### Seos backendiga
+
+- Frontend kaust: `books-api/frontend`
+- Backend API repo: https://github.com/kaarelkilki/books-api-kodutoo3
+- Frontend kasutab API baas-URLi muutujast `VITE_API_URL`
+
+### Frontendi install ja käivitus
+
+```bash
+cd frontend
+npm install
+```
+
+Keskkonnamuutuja:
+
+```env
+VITE_API_URL=http://localhost:3000/api/v1
+```
+
+Arendusserver:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Tootmisbuild:
+
+```bash
+cd frontend
+npm run build
+```
+
+Buildi eelvaade:
+
+```bash
+cd frontend
+npm run preview
+```
+
+### Frontendi vaated
+
+- `/books`
+  - raamatute nimekiri
+  - filtrid: pealkiri, aasta, keel
+  - sorteerimine: pealkiri/aasta, kasvav/kahanev
+  - pagination
+  - lisa/kustuta tegevused
+- `/books/:id`
+  - detailvaade
+  - raamatu muutmine ja kustutamine
+  - arvustuste list
+  - arvustuse lisamine
+
+### Frontendi struktuur
+
+- [frontend/src](frontend/src)
+- [frontend/src/pages](frontend/src/pages)
+- [frontend/src/components](frontend/src/components)
+- [frontend/src/hooks](frontend/src/hooks)
+- [frontend/src/api.ts](frontend/src/api.ts)
+
+Konfiguratsioonifailid:
+
+- [frontend/.env.example](frontend/.env.example)
+- [frontend/.gitignore](frontend/.gitignore)
+- [frontend/tailwind.config.js](frontend/tailwind.config.js)

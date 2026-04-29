@@ -304,18 +304,18 @@ Kontroll:
 
 ## 4.8 Dokumentatsioon ja esitamine (frontend)
 
-- [ ] Uuenda `README.md` (või `frontend/README.md`) minimaalse sisuga:
+- [x] Uuenda `README.md` (või `frontend/README.md`) minimaalse sisuga:
   - autor(id) ja ülesannete jaotus (individuaalsel juhul märgi, et töö tegija on 1)
   - installatsioonijuhised
   - käivitamise käsud
   - ekraanipildid vaadetest
   - link backend repo(le)
-- [ ] Veendu, et olemas on `.env.example` ja korrektne `.gitignore`.
-- [ ] Veendu, et kogu frontendi kood on `src/` all.
+- [x] Veendu, et olemas on `.env.example` ja korrektne `.gitignore`.
+- [x] Veendu, et kogu frontendi kood on `src/` all.
 
 Kontroll:
 
-- [ ] Hindaja saab projekti nullist käima ainult README järgi.
+- [x] Hindaja saab projekti nullist käima ainult README järgi.
 
 ## 4.9 Git töövoog (individuaalne)
 
