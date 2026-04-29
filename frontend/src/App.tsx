@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import AuthorsPage from "./pages/AuthorsPage.tsx";
 import BookDetailPage from "./pages/BookDetailPage.tsx";
 import BooksPage from "./pages/BooksPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
@@ -8,6 +9,7 @@ function App() {
     <Routes>
       <Route path="/books" element={<BooksPage />} />
       <Route path="/books/:id" element={<BookDetailPage />} />
+      <Route path="/authors" element={<AuthorsPage />} />
       <Route path="/" element={<Navigate to="/books" />} />
       <Route path="*" element={<Navigate to="/404" />} />
       <Route path="/404" element={<NotFoundPage />} />

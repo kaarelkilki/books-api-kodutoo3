@@ -308,8 +308,6 @@ Kontroll:
   - autor(id) ja ülesannete jaotus (individuaalsel juhul märgi, et töö tegija on 1)
   - installatsioonijuhised
   - käivitamise käsud
-  - ekraanipildid vaadetest
-  - link backend repo(le)
 - [x] Veendu, et olemas on `.env.example` ja korrektne `.gitignore`.
 - [x] Veendu, et kogu frontendi kood on `src/` all.
 
@@ -317,50 +315,11 @@ Kontroll:
 
 - [x] Hindaja saab projekti nullist käima ainult README järgi.
 
-## 4.9 Git töövoog (individuaalne)
-
-- [ ] Kasuta väikseid ja kirjeldavaid commit'eid (mitte üks suur commit).
-- [ ] Soovituslikud harud:
-  - `feature/frontend-setup`
-  - `feature/books-list`
-  - `feature/book-detail`
-  - `feature/reviews`
-  - `feature/ui-polish`
-- [ ] Kui töötad ainult `main` harus, hoia commitid loogiliste osadena eristatavad.
-
-Kontroll:
-
-- [ ] Git log näitab reaalse arenduse etappe.
-
-## 4.10 Valmiduse lõppkontroll hindamiskriteeriumi järgi
-
-- [ ] Põhifunktsionaalsus (3p):
-  - books list + detail + CRUD töötab
-  - arvustuse lisamine töötab
-- [ ] Otsing/sort/pagination (2p):
-  - vähemalt 3 filtrit
-  - sort töötab mõlemas suunas
-  - pagination navigeerimine töötab
-- [ ] Tehniline kvaliteet (2p):
-  - TypeScript ilma `any`
-  - AbortController
-  - eraldi `api.ts`
-  - loading + error olekud
-- [ ] UI/UX (2p):
-  - Tailwind kasutus
-  - loogiline ja kasutatav liides
-- [ ] Git + dokumentatsioon (1p):
-  - kirjeldavad commitid
-  - README + ekraanipildid
-  - `.env.example`
-
-NB! Frontendi hinnatavus eeldab, et backend API töötab stabiilselt.
-
 ---
 
 ## 5. Boonusülesanded (teha ainult pärast põhinõudeid)
 
-- [ ] `/authors` vaade (autorid + autori raamatud)
+- [x] `/authors` vaade (autorid + autori raamatud)
 - [ ] Žanrifilter dropdowniga backendist (`GET /genres`)
 - [ ] Arvustuse kustutamine (`DELETE /reviews/:id`)
 - [ ] React Query / TanStack Query kasutuselevõtt

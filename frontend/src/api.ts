@@ -73,6 +73,13 @@ export interface Review {
   comment?: string;
 }
 
+export interface Author {
+  id: number;
+  firstName: string;
+  lastName: string;
+  birthYear: number;
+}
+
 export interface ReviewListQuery {
   page?: number;
   limit?: number;
@@ -231,4 +238,9 @@ export async function deleteReview(
   signal?: AbortSignal,
 ): Promise<void> {
   await api.delete(`/reviews/${id}`, { signal });
+}
+
+export async function getAuthors(signal?: AbortSignal): Promise<Author[]> {
+  const response = await api.get<Author[]>("/authors", { signal });
+  return response.data;
 }

@@ -323,16 +323,21 @@ function BooksPage() {
             </p>
           </div>
 
-          <button
-            className="btn-primary"
-            type="button"
-            onClick={() => {
-              setShowCreateForm((current) => !current);
-              setActionError(null);
-            }}
-          >
-            {showCreateForm ? "Sulge vorm" : "Lisa raamat"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <Link className="btn-secondary" to="/authors">
+              Autorid
+            </Link>
+            <button
+              className="btn-primary"
+              type="button"
+              onClick={() => {
+                setShowCreateForm((current) => !current);
+                setActionError(null);
+              }}
+            >
+              {showCreateForm ? "Sulge vorm" : "Lisa raamat"}
+            </button>
+          </div>
         </div>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
