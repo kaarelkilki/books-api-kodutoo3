@@ -120,7 +120,7 @@ function AuthorsPage() {
                 Autorid ja nende raamatud
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                Ulevaade autoritest koos nende raamatutega. Iga raamatu juurest
+                Ülevaade autoritest koos nende raamatutega. Iga raamatu juurest
                 saab liikuda detailvaatesse.
               </p>
             </div>
@@ -161,7 +161,7 @@ function AuthorsPage() {
                   {fullName(author)}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Sunniaasta: {author.birthYear}
+                  Sünniaasta: {author.birthYear}
                 </p>
 
                 <div className="mt-4 border-t border-slate-200 pt-4">

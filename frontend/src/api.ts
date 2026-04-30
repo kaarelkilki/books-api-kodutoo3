@@ -244,3 +244,14 @@ export async function getAuthors(signal?: AbortSignal): Promise<Author[]> {
   const response = await api.get<Author[]>("/authors", { signal });
   return response.data;
 }
+
+export interface Genre {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export async function getGenres(signal?: AbortSignal): Promise<Genre[]> {
+  const response = await api.get<Genre[]>("/genres", { signal });
+  return response.data;
+}

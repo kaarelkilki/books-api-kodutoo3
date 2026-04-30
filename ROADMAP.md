@@ -320,7 +320,7 @@ Kontroll:
 ## 5. Boonusülesanded (teha ainult pärast põhinõudeid)
 
 - [x] `/authors` vaade (autorid + autori raamatud)
-- [ ] Žanrifilter dropdowniga backendist (`GET /genres`)
+- [x] Žanrifilter dropdowniga backendist (`GET /genres`)
 - [ ] Arvustuse kustutamine (`DELETE /reviews/:id`)
 - [ ] React Query / TanStack Query kasutuselevõtt
 - [ ] Tootmisbuildi kontroll (`npm run build`) veata

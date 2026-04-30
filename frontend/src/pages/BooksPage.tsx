@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { createBook, deleteBook, getBooks, isApiError } from "../api";
+import {
+  createBook,
+  deleteBook,
+  getBooks,
+  getGenres,
+  isApiError,
+} from "../api";
 import {
   BooksSkeleton,
   EmptyState,
@@ -13,6 +19,7 @@ import type {
   BookListQuery,
   BookSortField,
   CreateBookPayload,
+  Genre,
   PaginationMeta,
   SortOrder,
 } from "../api";
@@ -41,6 +48,7 @@ function buildQueryFromSearchParams(
 ): BookListQuery {
   const title = searchParams.get("title")?.trim() ?? "";
   const language = searchParams.get("language")?.trim() ?? "";
+  const genre = searchParams.get("genre")?.trim() ?? "";
   const yearValue = searchParams.get("year")?.trim() ?? "";
   const sortByValue = searchParams.get("sortBy");
   const orderValue = searchParams.get("order");
@@ -58,6 +66,10 @@ function buildQueryFromSearchParams(
 
   if (language) {
     query.language = language;
+  }
+
+  if (genre) {
+    query.genre = genre;
   }
 
   if (yearValue) {
@@ -91,6 +103,10 @@ function buildSearchParams(query: BookListQuery): URLSearchParams {
 
   if (query.language) {
     params.set("language", query.language);
+  }
+
+  if (query.genre) {
+    params.set("genre", query.genre);
   }
 
   if (query.sortBy) {
@@ -137,6 +153,7 @@ function BooksPage() {
     useState<CreateBookPayload>(emptyCreateForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const activeControllersRef = useRef<Set<AbortController>>(new Set());
 
   const query = useMemo(
@@ -147,6 +164,7 @@ function BooksPage() {
   const titleFilter = searchParams.get("title") ?? "";
   const yearFilter = searchParams.get("year") ?? "";
   const languageFilter = searchParams.get("language") ?? "";
+  const genreFilter = searchParams.get("genre") ?? "";
   const sortBy =
     (searchParams.get("sortBy") as BookSortField | null) ?? "title";
   const order = (searchParams.get("order") as SortOrder | null) ?? "asc";
@@ -156,6 +174,28 @@ function BooksPage() {
     return () => {
       activeControllersRef.current.forEach((controller) => controller.abort());
       activeControllersRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    activeControllersRef.current.add(controller);
+
+    async function loadGenres() {
+      try {
+        const data = await getGenres(controller.signal);
+        setGenres(data);
+      } catch {
+        // non-critical — genre dropdown stays empty
+      } finally {
+        activeControllersRef.current.delete(controller);
+      }
+    }
+
+    void loadGenres();
+
+    return () => {
+      controller.abort();
     };
   }, []);
 
@@ -217,11 +257,13 @@ function BooksPage() {
     const nextTitle = String(formData.get("title") ?? "").trim();
     const nextYear = String(formData.get("year") ?? "").trim();
     const nextLanguage = String(formData.get("language") ?? "").trim();
+    const nextGenre = String(formData.get("genre") ?? "").trim();
 
     updateQuery({
       title: nextTitle || undefined,
       year: nextYear ? Number(nextYear) : undefined,
       language: nextLanguage || undefined,
+      genre: nextGenre || undefined,
       page: 1,
     });
   }
@@ -353,11 +395,11 @@ function BooksPage() {
                   );
                 }}
               >
-                Tuhjenda
+                Tühjenda
               </button>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <label className="field-label">
                 <span className="field-caption">Pealkiri</span>
                 <input
@@ -391,6 +433,22 @@ function BooksPage() {
                   type="text"
                 />
               </label>
+
+              <label className="field-label">
+                <span className="field-caption">Žanr</span>
+                <select
+                  className="input-base"
+                  defaultValue={genreFilter}
+                  name="genre"
+                >
+                  <option value="">Kõik žanrid</option>
+                  {genres.map((g) => (
+                    <option key={g.id} value={g.name}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">
@@ -407,7 +465,7 @@ function BooksPage() {
 
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               <label className="field-label">
-                <span className="field-caption">Sorteeri jargi</span>
+                <span className="field-caption">Sorteeri järgi</span>
                 <select
                   name="sortBy"
                   className="input-base"
@@ -422,7 +480,7 @@ function BooksPage() {
               </label>
 
               <label className="field-label">
-                <span className="field-caption">Jarjekord</span>
+                <span className="field-caption">Järjekord</span>
                 <select
                   name="order"
                   className="input-base"
@@ -605,8 +663,8 @@ function BooksPage() {
 
         {!loading && !error && books.length === 0 && (
           <EmptyState
-            title="Uhtegi raamatut ei leitud"
-            message="Proovi filtreid muuta voi lisa uus raamat, et nimekiri taas taita."
+            title="Ühtegi raamatut ei leitud"
+            message="Proovi filtreid muuta või lisa uus raamat, et nimekiri taas täita."
           />
         )}
 
@@ -708,7 +766,7 @@ function BooksPage() {
                 type="button"
                 onClick={() => updateQuery({ page: currentPage + 1 })}
               >
-                Jargmine
+                Järgmine
               </button>
             </nav>
           </>
